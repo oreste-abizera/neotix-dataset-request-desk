@@ -14,3 +14,11 @@ export async function expectNoA11yViolations(container: Element = document.body)
   );
   expect(summary, summary.join("\n")).toEqual([]);
 }
+
+/** Every id must be unique: aria-describedby, aria-labelledby and label[for] all depend on it. */
+export function expectUniqueIds(container: Element = document.body) {
+  const seen = new Map<string, number>();
+  container.querySelectorAll("[id]").forEach((el) => seen.set(el.id, (seen.get(el.id) ?? 0) + 1));
+  const duplicates = [...seen].filter(([, n]) => n > 1).map(([id]) => id);
+  expect(duplicates, `duplicate ids: ${duplicates.join(", ")}`).toEqual([]);
+}

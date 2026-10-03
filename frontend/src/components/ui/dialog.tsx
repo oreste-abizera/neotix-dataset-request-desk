@@ -70,12 +70,15 @@ export function SheetContent({
   description,
   children,
   side = "right",
+  flush = false,
   className,
 }: {
   title: string;
   description?: string;
   children: ReactNode;
   side?: "right" | "left";
+  /** The children manage their own scrolling and padding (e.g. a list with a fixed footer). */
+  flush?: boolean;
   className?: string;
 }) {
   return (
@@ -93,7 +96,13 @@ export function SheetContent({
         )}
       >
         <Header title={title} description={description} />
-        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">{children}</div>
+        <div
+          className={
+            flush ? "flex min-h-0 flex-1 flex-col" : "min-h-0 flex-1 overflow-y-auto p-4 sm:p-5"
+          }
+        >
+          {children}
+        </div>
       </D.Content>
     </D.Portal>
   );

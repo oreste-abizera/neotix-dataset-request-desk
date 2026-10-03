@@ -4,7 +4,6 @@ import { BrowserRouter } from "react-router";
 import { SESSION_EXPIRED_EVENT } from "@/api/client";
 import { ApiError } from "@/api/errors";
 import { resetSession } from "@/api/queries/auth";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider, useThemeContext } from "./theme";
 
 export const EXPIRED_FLAG = "neotix.session-expired";
@@ -54,13 +53,11 @@ export function Providers({ children, client }: { children: ReactNode; client?: 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider delayDuration={300}>
-          <BrowserRouter>
-            <SessionWatcher client={queryClient} />
-            {children}
-            <ThemedToaster />
-          </BrowserRouter>
-        </TooltipProvider>
+        <BrowserRouter>
+          <SessionWatcher client={queryClient} />
+          {children}
+          <ThemedToaster />
+        </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
   );

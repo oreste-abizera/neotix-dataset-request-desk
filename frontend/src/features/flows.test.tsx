@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { expectNoA11yViolations } from "@/test/a11y";
+import { expectNoA11yViolations, expectUniqueIds } from "@/test/a11y";
 import { admin, client, detail, episode, operator, row } from "@/test/fixtures";
 import { fail, mockApi, ok, renderApp } from "@/test/render";
 
@@ -471,6 +471,31 @@ describe("users (admin)", () => {
         organisation: null,
       }),
     );
+  });
+});
+
+describe("accessibility of the remaining pages", () => {
+  it("users, import and new-request pages have no violations", async () => {
+    mockApi({
+      "GET /api/auth/me": ok(admin),
+      "GET /api/users": ok([admin, operator, client]),
+      "GET /api/imports": ok([]),
+    });
+    const users = renderApp("/users");
+    await screen.findAllByLabelText("Role for Olu Operator");
+    await expectNoA11yViolations(users.container);
+    expectUniqueIds(users.container); // axe only flags duplicate ids as "needs review"
+    users.unmount();
+
+    const imports = renderApp("/imports");
+    await screen.findByRole("heading", { name: "Import episodes" });
+    await expectNoA11yViolations(imports.container);
+    imports.unmount();
+
+    mockApi({ "GET /api/auth/me": ok(client) });
+    const form = renderApp("/requests/new");
+    await screen.findByRole("heading", { name: "New dataset request" });
+    await expectNoA11yViolations(form.container);
   });
 });
 

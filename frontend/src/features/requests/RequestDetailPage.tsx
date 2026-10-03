@@ -32,7 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { Table, TableScroll, Td, Th } from "@/components/ui/table";
 import { cn } from "@/lib/cn";
-import { QUALITY_LABEL, STATUS_HINT, TRANSITION_COPY } from "@/lib/copy";
+import { QUALITY_LABEL, STATUS_HINT, STATUS_LABEL, TRANSITION_COPY } from "@/lib/copy";
 import { dueIn, formatDate, formatDateTime, plural } from "@/lib/format";
 import AssignEpisodes from "@/features/assign/AssignEpisodes";
 
@@ -58,7 +58,7 @@ function BackLink() {
   return (
     <Link
       to="/requests"
-      className="mb-4 inline-flex items-center gap-1.5 rounded-md text-base text-muted-foreground hover:text-foreground"
+      className="-ml-2 mb-3 inline-flex min-h-10 items-center gap-1.5 rounded-md px-2 text-base text-muted-foreground hover:text-foreground"
     >
       <ArrowLeft className="size-4" aria-hidden /> All requests
     </Link>
@@ -189,8 +189,8 @@ export default function RequestDetailPage() {
   const run = (to: Status) => {
     const copy = TRANSITION_COPY[to];
     return transition.mutateAsync(to).then(() => {
-      toast.success(`${copy.action} done`, {
-        description: `Request #${r.id} is now ${to.replace("_", " ")}.`,
+      toast.success(copy.success, {
+        description: `Request #${r.id} is now ${STATUS_LABEL[to].toLowerCase()}.`,
       });
     });
   };
@@ -395,6 +395,7 @@ export default function RequestDetailPage() {
       {staff && (
         <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
           <SheetContent
+            flush
             title="Assign episodes"
             description={`Request #${r.id}: ${r.task_name}. Only unassigned episodes are listed.`}
           >

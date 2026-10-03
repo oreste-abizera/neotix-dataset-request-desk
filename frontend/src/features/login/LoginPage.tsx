@@ -1,9 +1,9 @@
 import { CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Navigate, useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { describeError } from "@/api/errors";
-import { useLogin, useMe } from "@/api/queries/auth";
+import { useLogin } from "@/api/queries/auth";
 import { EXPIRED_FLAG } from "@/app/providers";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,6 @@ const POINTS = [
 
 export default function LoginPage() {
   useDocumentTitle("Sign in");
-  const me = useMe();
   const login = useLogin();
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,7 +46,6 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<Values>();
 
-  if (me.data) return <Navigate to="/requests" replace />;
   const from = (location.state as { from?: string } | null)?.from ?? "/requests";
 
   const onSubmit = (values: Values) =>

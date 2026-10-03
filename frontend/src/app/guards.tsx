@@ -1,10 +1,13 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Outlet, useLocation, useOutletContext } from "react-router";
 import { useMe } from "@/api/queries/auth";
 import type { Role, User } from "@/api/types";
 import { Logo } from "@/components/Logo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/states";
-import { AppShell } from "./AppShell";
+
+// The signed-in shell (menus, dialogs, icons, shortcuts) is not needed to show the login page.
+const AppShell = lazy(() => import("./AppShell"));
 
 export interface ShellContext {
   user: User;
@@ -34,7 +37,11 @@ export function RequireAuth() {
   }
   if (me.data === null)
     return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
-  return <AppShell user={me.data} />;
+  return (
+    <Suspense fallback={<Splash />}>
+      <AppShell user={me.data} />
+    </Suspense>
+  );
 }
 
 /** Hides pages the role cannot use (the API returns 403 for them regardless). */

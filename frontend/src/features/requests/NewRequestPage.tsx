@@ -69,7 +69,7 @@ export default function NewRequestPage() {
     <>
       <Link
         to="/requests"
-        className="mb-4 inline-flex items-center gap-1.5 rounded-md text-base text-muted-foreground hover:text-foreground"
+        className="-ml-2 mb-3 inline-flex min-h-10 items-center gap-1.5 rounded-md px-2 text-base text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" aria-hidden /> All requests
       </Link>

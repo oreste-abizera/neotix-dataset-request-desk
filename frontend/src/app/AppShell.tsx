@@ -19,7 +19,7 @@ import {
   DropdownTrigger,
 } from "@/components/ui/dropdown";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tip } from "@/components/ui/tooltip";
+import { Tip, TooltipProvider } from "@/components/ui/tooltip";
 import { useHotkeys } from "@/hooks/useHotkeys";
 import { cn } from "@/lib/cn";
 import { ROLE_LABEL } from "@/lib/copy";
@@ -85,11 +85,13 @@ function UserMenu({
           variant="ghost"
           size="sm"
           className="gap-2 px-1.5"
-          aria-label={`Account menu for ${user.name}`}
+          aria-label={`${user.name}, account menu`}
         >
-          <span className="grid size-7 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-            {initials}
-          </span>
+          <span
+            aria-hidden
+            data-initials={initials}
+            className="grid size-7 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground before:content-[attr(data-initials)]"
+          />
           <span className="hidden max-w-32 truncate md:inline">{user.name}</span>
         </Button>
       </DropdownTrigger>
@@ -160,7 +162,7 @@ function useFocusHeadingOnNavigate() {
   }, [pathname]);
 }
 
-export function AppShell({ user }: { user: User }) {
+export default function AppShell({ user }: { user: User }) {
   const navigate = useNavigate();
   const logout = useLogout();
   const staff = user.role !== "client";
@@ -192,104 +194,106 @@ export function AppShell({ user }: { user: User }) {
   const items = navFor(user.role);
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <a
-        href="#main"
-        className="sr-only z-50 rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
-      >
-        Skip to content
-      </a>
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
-        <div className="mx-auto flex h-14 max-w-[75rem] items-center gap-2 px-4 sm:px-6">
-          <Dialog open={navOpen} onOpenChange={setNavOpen}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="-ml-2 md:hidden"
-              aria-label="Open navigation"
-              onClick={() => setNavOpen(true)}
-            >
-              <Menu className="size-5" aria-hidden />
-            </Button>
-            <SheetContent title="Navigation" side="left">
-              <nav aria-label="Main" className="flex flex-col gap-1">
-                {items.map((n) => (
-                  <NavLink
-                    key={n.to}
-                    to={n.to}
-                    className={({ isActive }) => cn(linkClass({ isActive }), "h-11")}
-                  >
-                    <n.icon className="size-4" aria-hidden />
-                    {n.label}
-                  </NavLink>
-                ))}
-              </nav>
-            </SheetContent>
-          </Dialog>
-
-          <Link
-            to="/requests"
-            className="mr-3 rounded-md"
-            aria-label={`Dataset Request Desk, home`}
-          >
-            <Logo className="[&>span:last-child]:hidden sm:[&>span:last-child]:inline" />
-          </Link>
-
-          <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-            {items.map((n) => (
-              <NavLink key={n.to} to={n.to} className={linkClass}>
-                <n.icon className="size-4" aria-hidden />
-                {n.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className="ml-auto flex items-center gap-2">
-            {staff && <LivePill state={live} />}
-            <Tip label="Command menu (⌘K)">
+    <TooltipProvider delayDuration={300}>
+      <div className="flex min-h-dvh flex-col">
+        <a
+          href="#main"
+          className="sr-only z-50 rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+        >
+          Skip to content
+        </a>
+        <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
+          <div className="mx-auto flex h-14 max-w-[75rem] items-center gap-2 px-4 sm:px-6">
+            <Dialog open={navOpen} onOpenChange={setNavOpen}>
               <Button
                 variant="ghost"
                 size="icon"
-                className="hidden sm:inline-flex"
-                aria-label="Open command menu"
-                onClick={openPalette}
+                className="-ml-2 md:hidden"
+                aria-label="Open navigation"
+                onClick={() => setNavOpen(true)}
               >
-                <CommandIcon className="size-4" aria-hidden />
+                <Menu className="size-5" aria-hidden />
               </Button>
-            </Tip>
-            <UserMenu
+              <SheetContent title="Navigation" side="left">
+                <nav aria-label="Main" className="flex flex-col gap-1">
+                  {items.map((n) => (
+                    <NavLink
+                      key={n.to}
+                      to={n.to}
+                      className={({ isActive }) => cn(linkClass({ isActive }), "h-11")}
+                    >
+                      <n.icon className="size-4" aria-hidden />
+                      {n.label}
+                    </NavLink>
+                  ))}
+                </nav>
+              </SheetContent>
+            </Dialog>
+
+            <Link
+              to="/requests"
+              className="mr-3 rounded-md"
+              aria-label={`Dataset Request Desk, home`}
+            >
+              <Logo className="[&>span:last-child]:hidden sm:[&>span:last-child]:inline" />
+            </Link>
+
+            <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+              {items.map((n) => (
+                <NavLink key={n.to} to={n.to} className={linkClass}>
+                  <n.icon className="size-4" aria-hidden />
+                  {n.label}
+                </NavLink>
+              ))}
+            </nav>
+
+            <div className="ml-auto flex items-center gap-2">
+              {staff && <LivePill state={live} />}
+              <Tip label="Command menu (⌘K)">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hidden sm:inline-flex"
+                  aria-label="Open command menu"
+                  onClick={openPalette}
+                >
+                  <CommandIcon className="size-4" aria-hidden />
+                </Button>
+              </Tip>
+              <UserMenu
+                user={user}
+                onSignOut={signOut}
+                onShortcuts={() => setHelpOpen(true)}
+                onPalette={openPalette}
+              />
+            </div>
+          </div>
+        </header>
+
+        <main
+          id="main"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-[75rem] flex-1 px-4 py-6 outline-none sm:px-6 sm:py-8"
+        >
+          <ErrorBoundary>
+            <Suspense fallback={<PageFallback />}>
+              <Outlet context={{ user }} />
+            </Suspense>
+          </ErrorBoundary>
+        </main>
+
+        <ShortcutsDialog open={helpOpen} onOpenChange={setHelpOpen} staff={staff} />
+        {paletteLoaded && (
+          <Suspense fallback={null}>
+            <CommandPalette
+              open={paletteOpen}
+              onOpenChange={setPaletteOpen}
               user={user}
               onSignOut={signOut}
-              onShortcuts={() => setHelpOpen(true)}
-              onPalette={openPalette}
             />
-          </div>
-        </div>
-      </header>
-
-      <main
-        id="main"
-        tabIndex={-1}
-        className="mx-auto w-full max-w-[75rem] flex-1 px-4 py-6 outline-none sm:px-6 sm:py-8"
-      >
-        <ErrorBoundary>
-          <Suspense fallback={<PageFallback />}>
-            <Outlet context={{ user }} />
           </Suspense>
-        </ErrorBoundary>
-      </main>
-
-      <ShortcutsDialog open={helpOpen} onOpenChange={setHelpOpen} staff={staff} />
-      {paletteLoaded && (
-        <Suspense fallback={null}>
-          <CommandPalette
-            open={paletteOpen}
-            onOpenChange={setPaletteOpen}
-            user={user}
-            onSignOut={signOut}
-          />
-        </Suspense>
-      )}
-    </div>
+        )}
+      </div>
+    </TooltipProvider>
   );
 }

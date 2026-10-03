@@ -44,6 +44,8 @@ export interface TransitionCopy {
   title: string;
   description: string;
   confirm: string;
+  /** Toast title once it has happened. */
+  success: string;
   tone: "primary" | "danger";
   /** Needs an explicit confirmation step. */
   confirmFirst: boolean;
@@ -55,6 +57,7 @@ export const TRANSITION_COPY: Record<Status, TransitionCopy> = {
     title: "Submit request?",
     description: "",
     confirm: "Submit",
+    success: "Request submitted",
     tone: "primary",
     confirmFirst: false,
   },
@@ -63,6 +66,7 @@ export const TRANSITION_COPY: Record<Status, TransitionCopy> = {
     title: "Start work on this request?",
     description: "The request moves to “In progress” and the client can see it.",
     confirm: "Start work",
+    success: "Work started",
     tone: "primary",
     confirmFirst: false,
   },
@@ -72,6 +76,7 @@ export const TRANSITION_COPY: Record<Status, TransitionCopy> = {
     description:
       "The client will be asked to review it, and the assigned episodes can no longer be changed.",
     confirm: "Mark delivered",
+    success: "Marked as delivered",
     tone: "primary",
     confirmFirst: true,
   },
@@ -80,6 +85,7 @@ export const TRANSITION_COPY: Record<Status, TransitionCopy> = {
     title: "Accept this delivery?",
     description: "This closes the request. It cannot be undone.",
     confirm: "Accept delivery",
+    success: "Delivery accepted",
     tone: "primary",
     confirmFirst: true,
   },
@@ -88,6 +94,7 @@ export const TRANSITION_COPY: Record<Status, TransitionCopy> = {
     title: "Reject this delivery?",
     description: "The request goes back to the team for rework.",
     confirm: "Reject delivery",
+    success: "Delivery rejected",
     tone: "danger",
     confirmFirst: true,
   },

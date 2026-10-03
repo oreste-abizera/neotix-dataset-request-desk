@@ -122,171 +122,175 @@ export default function AssignEpisodes({
     });
 
   return (
-    <div className="flex min-h-full flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,16rem)_1fr] sm:items-end">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="assign-task" className="text-base font-medium">
-            Task
-          </label>
-          <Select
-            id="assign-task"
-            value={effectiveTask}
-            disabled={task === null}
-            onChange={(e) => filterChanged(() => setTaskChoice(e.target.value))}
-          >
-            <option value="">All tasks</option>
-            {(tasks.data ?? []).map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <span className="text-base font-medium" id="assign-quality">
-            Quality
-          </span>
-          <div aria-labelledby="assign-quality" role="group">
-            <FilterChips
-              label="Quality"
-              chips={QUALITY_CHIPS}
-              value={quality}
-              onChange={(v) => filterChanged(() => setQuality(v))}
-            />
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex flex-col gap-4 px-4 pt-4 sm:px-5">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,16rem)_1fr] sm:items-end">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="assign-task" className="text-base font-medium">
+              Task
+            </label>
+            <Select
+              id="assign-task"
+              value={effectiveTask}
+              disabled={task === null}
+              onChange={(e) => filterChanged(() => setTaskChoice(e.target.value))}
+            >
+              <option value="">All tasks</option>
+              {(tasks.data ?? []).map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-base font-medium" id="assign-quality">
+              Quality
+            </span>
+            <div aria-labelledby="assign-quality" role="group">
+              <FilterChips
+                label="Quality"
+                chips={QUALITY_CHIPS}
+                value={quality}
+                onChange={(v) => filterChanged(() => setQuality(v))}
+              />
+            </div>
           </div>
         </div>
+
+        <p className="text-sm text-muted-foreground" aria-live="polite">
+          {episodes.data
+            ? `${episodes.data.total.toLocaleString()} unassigned episodes match`
+            : "Loading episodes…"}
+          {missing > 0 && ` · this request still needs ${plural(missing, "episode")}`}
+        </p>
+
+        {assign.error && <Alert>{describeError(assign.error)}</Alert>}
       </div>
 
-      <p className="text-sm text-muted-foreground" aria-live="polite">
-        {episodes.data
-          ? `${episodes.data.total.toLocaleString()} unassigned episodes match`
-          : "Loading episodes…"}
-        {missing > 0 && ` · this request still needs ${plural(missing, "episode")}`}
-      </p>
-
-      {assign.error && <Alert>{describeError(assign.error)}</Alert>}
-
-      {episodes.isPending || task === null ? (
-        <div
-          role="status"
-          aria-label="Loading episodes"
-          aria-busy="true"
-          className="flex flex-col gap-2"
-        >
-          {Array.from({ length: 6 }, (_, i) => (
-            <Skeleton key={i} className="h-11 w-full" />
-          ))}
-        </div>
-      ) : episodes.isError ? (
-        <ErrorState
-          message={describeError(episodes.error)}
-          onRetry={() => void episodes.refetch()}
-          retrying={episodes.isFetching}
-        />
-      ) : rows.length === 0 ? (
-        <EmptyState
-          icon={SearchX}
-          title="No matching episodes"
-          description="Try another task or quality, or import more episodes."
-        />
-      ) : (
-        <>
-          {/* Wide screens: a table. Phones: one tappable row per episode, no sideways scrolling. */}
-          <div className="hidden md:block">
-            <TableScroll label="Unassigned episodes">
-              <Table>
-                <caption className="sr-only">Unassigned episodes matching the filters</caption>
-                <thead>
-                  <tr>
-                    <Th className="w-12">
-                      <label className="inline-flex size-9 cursor-pointer items-center justify-center">
-                        <input
-                          type="checkbox"
-                          className="size-[18px] accent-primary"
-                          checked={allOnPage}
-                          ref={(el) => {
-                            if (el) el.indeterminate = !allOnPage && someOnPage;
-                          }}
-                          onChange={togglePage}
-                          aria-label="Select all assignable episodes on this page"
-                        />
-                      </label>
-                    </Th>
-                    <Th>Episode</Th>
-                    <Th>Robot</Th>
-                    <Th>Task</Th>
-                    <Th>Recorded</Th>
-                    <Th>Quality</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((e) => (
-                    <tr
-                      key={e.episode_id}
-                      className={cn(
-                        !assignable(e) && "opacity-60",
-                        selected.has(e.episode_id) && "bg-primary-soft",
-                      )}
-                    >
-                      <Td className="w-12 !px-1 text-center">
-                        <EpisodeCheckbox
-                          episode={e}
-                          checked={selected.has(e.episode_id)}
-                          onChange={() => toggle(e.episode_id)}
-                        />
-                      </Td>
-                      <Td className="font-mono text-sm whitespace-nowrap">{e.episode_id}</Td>
-                      <Td className="whitespace-nowrap">{e.robot_id}</Td>
-                      <Td className="capitalize">{e.task_name}</Td>
-                      <Td className="whitespace-nowrap tabular">{formatDate(e.recorded_at)}</Td>
-                      <Td>
-                        <QualityText q={e.quality} />
-                      </Td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </TableScroll>
-          </div>
-          <ul className="flex flex-col gap-2 md:hidden">
-            {rows.map((e) => (
-              <li
-                key={e.episode_id}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg border border-line p-1 pr-3",
-                  !assignable(e) && "opacity-60",
-                  selected.has(e.episode_id) && "border-primary bg-primary-soft",
-                )}
-              >
-                <EpisodeCheckbox
-                  episode={e}
-                  checked={selected.has(e.episode_id)}
-                  onChange={() => toggle(e.episode_id)}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="font-mono text-sm">{e.episode_id}</p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {e.robot_id} · <span className="capitalize">{e.task_name}</span> ·{" "}
-                    {formatDate(e.recorded_at)}
-                  </p>
-                </div>
-                <QualityText q={e.quality} />
-              </li>
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+        {episodes.isPending || task === null ? (
+          <div
+            role="status"
+            aria-label="Loading episodes"
+            aria-busy="true"
+            className="flex flex-col gap-2"
+          >
+            {Array.from({ length: 6 }, (_, i) => (
+              <Skeleton key={i} className="h-11 w-full" />
             ))}
-          </ul>
-          <Pagination
-            page={page}
-            hasNext={page * EPISODES_PAGE_SIZE < (episodes.data?.total ?? 0)}
-            busy={episodes.isFetching}
-            onPage={setPage}
-            total={episodes.data?.total}
-            pageSize={EPISODES_PAGE_SIZE}
+          </div>
+        ) : episodes.isError ? (
+          <ErrorState
+            message={describeError(episodes.error)}
+            onRetry={() => void episodes.refetch()}
+            retrying={episodes.isFetching}
           />
-        </>
-      )}
+        ) : rows.length === 0 ? (
+          <EmptyState
+            icon={SearchX}
+            title="No matching episodes"
+            description="Try another task or quality, or import more episodes."
+          />
+        ) : (
+          <>
+            {/* Wide screens: a table. Phones: one tappable row per episode, no sideways scrolling. */}
+            <div className="hidden md:block">
+              <TableScroll label="Unassigned episodes">
+                <Table>
+                  <caption className="sr-only">Unassigned episodes matching the filters</caption>
+                  <thead>
+                    <tr>
+                      <Th className="w-12">
+                        <label className="inline-flex size-9 cursor-pointer items-center justify-center">
+                          <input
+                            type="checkbox"
+                            className="size-[18px] accent-primary"
+                            checked={allOnPage}
+                            ref={(el) => {
+                              if (el) el.indeterminate = !allOnPage && someOnPage;
+                            }}
+                            onChange={togglePage}
+                            aria-label="Select all assignable episodes on this page"
+                          />
+                        </label>
+                      </Th>
+                      <Th>Episode</Th>
+                      <Th>Robot</Th>
+                      <Th>Task</Th>
+                      <Th>Recorded</Th>
+                      <Th>Quality</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((e) => (
+                      <tr
+                        key={e.episode_id}
+                        className={cn(
+                          !assignable(e) && "opacity-60",
+                          selected.has(e.episode_id) && "bg-primary-soft",
+                        )}
+                      >
+                        <Td className="w-12 !px-1 text-center">
+                          <EpisodeCheckbox
+                            episode={e}
+                            checked={selected.has(e.episode_id)}
+                            onChange={() => toggle(e.episode_id)}
+                          />
+                        </Td>
+                        <Td className="font-mono text-sm whitespace-nowrap">{e.episode_id}</Td>
+                        <Td className="whitespace-nowrap">{e.robot_id}</Td>
+                        <Td className="capitalize">{e.task_name}</Td>
+                        <Td className="whitespace-nowrap tabular">{formatDate(e.recorded_at)}</Td>
+                        <Td>
+                          <QualityText q={e.quality} />
+                        </Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </TableScroll>
+            </div>
+            <ul className="flex flex-col gap-2 md:hidden">
+              {rows.map((e) => (
+                <li
+                  key={e.episode_id}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg border border-line p-1 pr-3",
+                    !assignable(e) && "opacity-60",
+                    selected.has(e.episode_id) && "border-primary bg-primary-soft",
+                  )}
+                >
+                  <EpisodeCheckbox
+                    episode={e}
+                    checked={selected.has(e.episode_id)}
+                    onChange={() => toggle(e.episode_id)}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-mono text-sm">{e.episode_id}</p>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {e.robot_id} · <span className="capitalize">{e.task_name}</span> ·{" "}
+                      {formatDate(e.recorded_at)}
+                    </p>
+                  </div>
+                  <QualityText q={e.quality} />
+                </li>
+              ))}
+            </ul>
+            <Pagination
+              page={page}
+              hasNext={page * EPISODES_PAGE_SIZE < (episodes.data?.total ?? 0)}
+              busy={episodes.isFetching}
+              onPage={setPage}
+              total={episodes.data?.total}
+              pageSize={EPISODES_PAGE_SIZE}
+            />
+          </>
+        )}
+      </div>
 
-      {/* Sticky action bar: always reachable, even in a long list. */}
-      <div className="sticky bottom-0 -mx-4 mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface px-4 py-3 sm:-mx-5 sm:px-5">
+      {/* Fixed footer outside the scrolling list: always reachable, however long the list is. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface px-4 py-3 sm:px-5">
         <div className="text-sm">
           <p className="font-medium tabular">{plural(selected.size, "episode")} selected</p>
           {mismatched > 0 && (

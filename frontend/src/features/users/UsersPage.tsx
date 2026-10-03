@@ -190,12 +190,22 @@ function CreateUserDialog({
   );
 }
 
-function RoleSelect({ user, me, onChange }: { user: User; me: User; onChange: (r: Role) => void }) {
+function RoleSelect({
+  user,
+  me,
+  scope,
+  onChange,
+}: {
+  user: User;
+  me: User;
+  scope: string;
+  onChange: (r: Role) => void;
+}) {
   const self = user.id === me.id;
   const select = (
     <Select
       aria-label={`Role for ${user.name}`}
-      aria-describedby={self ? `self-role-${user.id}` : undefined}
+      aria-describedby={self ? `self-role-${scope}-${user.id}` : undefined}
       value={user.role}
       disabled={self}
       onChange={(e) => onChange(e.target.value as Role)}
@@ -215,7 +225,7 @@ function RoleSelect({ user, me, onChange }: { user: User; me: User; onChange: (r
     <Tip label="You can't change your own role">
       <div>
         {select}
-        <span id={`self-role-${user.id}`} className="sr-only">
+        <span id={`self-role-${scope}-${user.id}`} className="sr-only">
           You can't change your own role.
         </span>
       </div>
@@ -226,10 +236,12 @@ function RoleSelect({ user, me, onChange }: { user: User; me: User; onChange: (r
 function ActiveSwitch({
   user,
   me,
+  scope,
   onToggle,
 }: {
   user: User;
   me: User;
+  scope: string;
   onToggle: (next: boolean) => void;
 }) {
   const self = user.id === me.id;
@@ -238,7 +250,7 @@ function ActiveSwitch({
       checked={user.is_active}
       disabled={self}
       aria-label={`${user.name} is ${user.is_active ? "active" : "deactivated"}`}
-      aria-describedby={self ? `self-active-${user.id}` : undefined}
+      aria-describedby={self ? `self-active-${scope}-${user.id}` : undefined}
       onCheckedChange={onToggle}
     />
   );
@@ -255,7 +267,7 @@ function ActiveSwitch({
         {user.is_active ? "Active" : "Deactivated"}
       </span>
       {self && (
-        <span id={`self-active-${user.id}`} className="sr-only">
+        <span id={`self-active-${scope}-${user.id}`} className="sr-only">
           You can't deactivate yourself.
         </span>
       )}
@@ -352,10 +364,20 @@ export default function UsersPage() {
                         </Td>
                         <Td className="text-muted-foreground">{u.email}</Td>
                         <Td>
-                          <RoleSelect user={u} me={me} onChange={(r) => changeRole(u, r)} />
+                          <RoleSelect
+                            user={u}
+                            me={me}
+                            scope="table"
+                            onChange={(r) => changeRole(u, r)}
+                          />
                         </Td>
                         <Td>
-                          <ActiveSwitch user={u} me={me} onToggle={(n) => setActive(u, n)} />
+                          <ActiveSwitch
+                            user={u}
+                            me={me}
+                            scope="table"
+                            onToggle={(n) => setActive(u, n)}
+                          />
                         </Td>
                       </tr>
                     ))}
@@ -386,8 +408,8 @@ export default function UsersPage() {
                   {u.organisation ? ` · ${u.organisation}` : ""}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                  <RoleSelect user={u} me={me} onChange={(r) => changeRole(u, r)} />
-                  <ActiveSwitch user={u} me={me} onToggle={(n) => setActive(u, n)} />
+                  <RoleSelect user={u} me={me} scope="card" onChange={(r) => changeRole(u, r)} />
+                  <ActiveSwitch user={u} me={me} scope="card" onToggle={(n) => setActive(u, n)} />
                 </div>
               </li>
             ))}
