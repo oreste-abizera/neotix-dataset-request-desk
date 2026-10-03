@@ -9,8 +9,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=UserOut)
-def login(data: LoginIn, response: Response, db: Db):
+def login(data: LoginIn, request: Request, response: Response, db: Db):
     user, token = users.login(db, data.email, data.password)
+    request.state.user_id = user.id  # so the access log line names who just signed in
     response.set_cookie(
         settings.cookie_name,
         token,

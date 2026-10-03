@@ -5,6 +5,8 @@ import logging
 
 from sqlalchemy import text
 
+from tests.conftest import PASSWORD
+
 
 def test_health_reports_database_up(anon):
     r = anon.get("/health")
@@ -85,3 +87,11 @@ def test_database_constraints_back_up_the_rules(db):
             )
         )
     db.rollback()
+
+
+def test_login_request_is_logged_with_the_user_id(operator, anon, caplog):
+    caplog.set_level(logging.INFO, logger="app.access")
+    caplog.clear()
+    anon.post("/api/auth/login", json={"email": operator.email, "password": PASSWORD})
+    record = next(r for r in caplog.records if r.name == "app.access")
+    assert record.fields["path"] == "/api/auth/login" and record.fields["user_id"] == operator.id

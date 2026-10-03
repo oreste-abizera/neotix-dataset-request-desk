@@ -1,0 +1,9 @@
+.git
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+frontend/dist
+seed/episodes_large.csv
+docs
