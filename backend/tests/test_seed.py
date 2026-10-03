@@ -39,3 +39,17 @@ def test_seed_refuses_in_production(db, monkeypatch):
     monkeypatch.setattr(settings, "app_env", "production")
     cli.seed()
     assert db.scalar(select(func.count()).select_from(User)) == 0
+
+
+def test_create_admin_bootstraps_a_working_admin_and_rejects_weak_or_duplicate(db, capsys):
+    import pytest
+
+    with pytest.raises(SystemExit, match="at least 12"):
+        cli.create_admin("root@example.com", "Root", "short")
+    cli.create_admin("Root@Example.com", "Root", "a-long-enough-password")
+    r = api_client().post(
+        "/api/auth/login", json={"email": "root@example.com", "password": "a-long-enough-password"}
+    )
+    assert r.status_code == 200 and r.json()["role"] == "admin"
+    with pytest.raises(SystemExit, match="already exists"):
+        cli.create_admin("root@example.com", "Root", "a-long-enough-password")

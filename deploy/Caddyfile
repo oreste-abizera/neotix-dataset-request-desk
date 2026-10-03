@@ -1,0 +1,12 @@
+# Caddy terminates HTTPS and obtains/renews a Let's Encrypt certificate automatically for the
+# hostname in SITE_ADDRESS (ports 80 and 443 must be reachable). `localhost` uses Caddy's own CA.
+{$SITE_ADDRESS} {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	reverse_proxy web:80 {
+		flush_interval -1   # do not buffer Server-Sent Events
+	}
+}

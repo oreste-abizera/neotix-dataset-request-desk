@@ -1,12 +1,15 @@
-"""Operational commands:  python -m app.cli seed | import-episodes FILE"""
+"""Operational commands:  python -m app.cli seed | import-episodes FILE | create-admin"""
 
 import argparse
+import getpass
 import logging
+import os
 import sys
 from pathlib import Path
 
 from app.config import settings
 from app.db import SessionLocal
+from app.errors import AppError
 from app.services import importer, users
 
 log = logging.getLogger("app.cli")
@@ -36,6 +39,21 @@ def import_episodes(path: Path) -> None:
     print(json.dumps(report, indent=2, default=str))
 
 
+MIN_ADMIN_PASSWORD_LENGTH = 12
+
+
+def create_admin(email: str, name: str, password: str) -> None:
+    """Bootstrap the first administrator, e.g. in production where demo users are never seeded."""
+    if len(password) < MIN_ADMIN_PASSWORD_LENGTH:
+        raise SystemExit(f"Password must be at least {MIN_ADMIN_PASSWORD_LENGTH} characters.")
+    with SessionLocal() as db:
+        try:
+            user = users.create_user(db, email=email, name=name, role="admin", password=password)
+        except AppError as exc:
+            raise SystemExit(exc.message) from None
+    print(f"admin created: {user.email}")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -43,8 +61,16 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--force", action="store_true")
     i = sub.add_parser("import-episodes", help="import an episodes CSV; prints the report")
     i.add_argument("file", type=Path)
+    a = sub.add_parser(
+        "create-admin", help="create an administrator (password from $ADMIN_PASSWORD or a prompt)"
+    )
+    a.add_argument("--email", required=True)
+    a.add_argument("--name", required=True)
     args = parser.parse_args(argv)
-    if args.command == "seed":
+    if args.command == "create-admin":
+        password = os.environ.get("ADMIN_PASSWORD") or getpass.getpass("Password: ")
+        create_admin(args.email, args.name, password)
+    elif args.command == "seed":
         seed(args.force)
     else:
         import_episodes(args.file)
