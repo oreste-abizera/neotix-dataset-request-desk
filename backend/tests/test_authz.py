@@ -165,3 +165,27 @@ def test_clients_may_see_assigned_episodes_on_their_own_request(db, client_a, as
     req = make_request(db, client_a, assigned=2)
     detail = as_a.get(f"/api/requests/{req.id}").json()
     assert len(detail["episodes"]) == 2
+
+
+def test_inactive_flag_is_enforced_on_every_request_even_if_a_session_survives(
+    db, operator, as_operator
+):
+    """Defence in depth: deactivation deletes sessions, but the lookup re-checks the flag too."""
+    from sqlalchemy import update
+
+    from app.models import User
+
+    db.execute(update(User).where(User.id == operator.id).values(is_active=False))
+    db.commit()
+    assert as_operator.get("/api/requests").status_code == 401
+
+
+def test_request_list_supports_paging(db, client_a, as_operator):
+    for _ in range(5):
+        make_request(db, client_a)
+    first = as_operator.get("/api/requests", params={"limit": 2, "offset": 0}).json()
+    second = as_operator.get("/api/requests", params={"limit": 2, "offset": 2}).json()
+    third = as_operator.get("/api/requests", params={"limit": 2, "offset": 4}).json()
+    ids = [r["id"] for r in first + second + third]
+    assert len(first) == 2 and len(second) == 2 and len(third) == 1
+    assert ids == sorted(ids, reverse=True) and len(set(ids)) == 5
