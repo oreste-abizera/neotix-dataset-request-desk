@@ -110,12 +110,14 @@ def assign_episodes(db: DbSession, actor: User, request_id: int, episode_ids: li
             code="assignment_rejected",
             details={"failures": failures},
         )
-    db.add_all(
-        Assignment(episode_id=eid, request_id=request.id, assigned_by=actor.id) for eid in ids
-    )
-    db.flush()
-    exports.enqueue(db, request.id, ids)  # same transaction: a job exists iff the assignment does
     try:
+        # Everything that can hit the primary key on assignments.episode_id (a concurrent writer
+        # took one of these episodes) must sit inside this try, including the implicit flush.
+        db.add_all(
+            Assignment(episode_id=eid, request_id=request.id, assigned_by=actor.id) for eid in ids
+        )
+        db.flush()
+        exports.enqueue(db, request.id, ids)  # same transaction: a job exists iff the assignment
         db.commit()
     except IntegrityError:
         db.rollback()

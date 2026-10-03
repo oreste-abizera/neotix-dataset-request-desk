@@ -16,3 +16,9 @@
   Lesson: scripted edits must assert they changed something; the behaviour test caught it, not the edit.
 - Self-review found the importer would raise `csv.Error` (field > 128 KB) and psycopg `DataError` (NUL byte) as 500s;
   both now return 422 `invalid_csv` before anything is written (test added).
+- Background-export work: adding `db.flush()` + enqueue before the `try: db.commit() except IntegrityError` in
+  `assign_episodes` moved the primary-key collision (two operators racing for one episode) *outside* the handler, so
+  the loser got a 500. The existing two-thread race test caught it only intermittently (1 failure in a Docker run; 0 in
+  30 local loops). Fixed by moving add/flush/enqueue/commit inside the `try`, and added a deterministic regression test
+  (one session holds an uncommitted assignment, a second operator blocks on it, then collides at flush time). Verified
+  the new test fails against the old structure.

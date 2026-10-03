@@ -2,6 +2,7 @@
 
 import contextlib
 import threading
+import time
 
 import pytest
 from sqlalchemy import func, select
@@ -111,6 +112,37 @@ def test_concurrent_assignment_of_same_episode_has_exactly_one_winner(
         t.join()
     assert sorted(outcomes) == ["conflict", "ok"]
     assert db.scalar(select(func.count()).select_from(Assignment)) == 1
+
+
+def test_collision_discovered_at_flush_time_is_a_409_not_a_500(db, operator, client_a, client_b):
+    """Deterministic version of the race: session A holds an uncommitted assignment of the episode;
+    operator B checks (sees it free), inserts, and blocks on A's row until A commits, then fails
+    with a unique violation *inside* assign_episodes. That must surface as Conflict."""
+    from app.models import Assignment
+
+    r1 = make_request(db, client_a, status="in_progress")
+    r2 = make_request(db, client_b, status="in_progress")
+    (ep,) = make_episodes(db, 1)
+    result: list[str] = []
+
+    with SessionLocal() as holder:
+        holder.add(Assignment(episode_id=ep, request_id=r1.id, assigned_by=operator.id))
+        holder.flush()  # row exists but is not committed yet
+
+        def second_operator():
+            with SessionLocal() as s:
+                try:
+                    assignments.assign_episodes(s, operator, r2.id, [ep])
+                    result.append("ok")
+                except Conflict as exc:
+                    result.append(exc.code)
+
+        t = threading.Thread(target=second_operator)
+        t.start()
+        time.sleep(0.5)  # let it reach the blocked insert
+        holder.commit()
+        t.join(timeout=10)
+    assert result == ["assignment_conflict"]
 
 
 def test_delivery_cannot_race_past_an_unassign(db, operator, client_a):

@@ -3,7 +3,7 @@
 Internal platform that replaces the spreadsheet for a robot-data company: clients request datasets, operators fulfil them by assigning recorded episodes, clients accept or reject the delivery. Operators can also import the (messy) episode CSV export and see analytics.
 
 **Stack:** Python 3.13 · FastAPI · SQLAlchemy 2 · Alembic · PostgreSQL 16 · React + TypeScript (Vite) behind nginx · Docker Compose.
-**Stretch item chosen:** real-time updates (Server-Sent Events) for operators.
+**Stretch items:** the one I chose is **real-time updates** (Server-Sent Events) for operators. I also built the **background export** job (§ below) and the **deployment tooling** (`deploy/`, `docs/DEPLOY.md`). The deployment is verified locally but **not published**: there is no public URL.
 Design reasoning, trade-offs and what I would do next are in **[NOTES.md](NOTES.md)**.
 
 ## Run it (one command)
@@ -48,7 +48,7 @@ make test        # whole suite inside Docker against a real Postgres: nothing to
 make test-local  # same tests with a local venv (needs Python 3.11+); also: make lint
 ```
 
-199 tests against a **real PostgreSQL** (a separate `neotix_test` database, migrated with Alembic). They concentrate on what the brief names:
+214 tests against a **real PostgreSQL** (a separate `neotix_test` database, migrated with Alembic). They concentrate on what the brief names:
 
 | Area | File | Examples |
 |---|---|---|
@@ -60,6 +60,14 @@ make test-local  # same tests with a local venv (needs Python 3.11+); also: make
 | Operability | `test_operability.py`, `test_seed.py`, `test_events.py` | `/health` up/down, one JSON log line per request with user id, error envelope, seed idempotency, SSE |
 
 CI (`.github/workflows/ci.yml`): backend lint + tests with a Postgres service, frontend build, and a `docker compose up` smoke test. *Written but not yet run on GitHub from my side.*
+
+## Stretch items
+
+| Item | Status | Where |
+|---|---|---|
+| Real-time (SSE) | Done (the one I picked) | `app/events.py`, `GET /api/events`, header shows "● Live"; `tests/test_events.py` |
+| Background work | Done (extra) | On assignment each episode gets an export job (sleep 2-5 s, fails 20%). Postgres-backed queue (`FOR UPDATE SKIP LOCKED`), idempotent enqueue (PK = episode id), leases so a dead worker's job is taken over, completion fenced by attempt number, up to 5 attempts with backoff, manual "Retry failed exports", per-episode status in the operator UI (live). `app/services/exports.py`, `app/worker.py`, `tests/test_exports.py` |
+| Deployment | Tooling done and verified locally; **not deployed publicly** | `deploy/docker-compose.prod.yml` (Caddy automatic HTTPS, only 80/443 exposed, no demo users), `python -m app.cli create-admin`, secrets and DB management in [docs/DEPLOY.md](docs/DEPLOY.md) |
 
 ## Architecture
 
@@ -95,9 +103,10 @@ frontend/src/    seed/ (provided data)    docs/ (requirements, research, plan, d
 | `POST /imports` (multipart CSV), `GET /imports[/{id}]` | operator · admin |
 | `GET /analytics?from=YYYY-MM-DD&to=YYYY-MM-DD` | operator · admin |
 | `GET /events` (SSE) | operator · admin |
+| `POST /requests/{id}/exports/retry` | operator · admin |
 | `GET /health` (outside `/api`) | public |
 
-CLI inside the API container: `python -m app.cli import-episodes FILE`, `python -m app.cli seed`.
+CLI inside the API container: `python -m app.cli import-episodes FILE`, `seed`, `create-admin`.
 
 ## Key decisions (details and trade-offs in NOTES.md)
 - **PostgreSQL only.** The median is `percentile_cont` in SQL, the import uses `ON CONFLICT`, assignment races use row locks. SQLite cannot do these, so there is no "what changes in production" caveat.
@@ -118,4 +127,4 @@ The full list is in [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) §5 and summari
 Playwright end-to-end tests; a correct-an-episode flow with audit trail; background import with progress; keyset pagination and a rollup table; real deployment with managed secrets; password reset. Full list in NOTES.md §2.
 
 ## Time spent
-About 7 hours of working time, including requirements analysis, research, implementation, tests, performance measurement and documentation (estimate).
+About 9 hours of working time including the two extra stretch items: requirements analysis, research, implementation, tests, performance measurement and documentation (estimate).

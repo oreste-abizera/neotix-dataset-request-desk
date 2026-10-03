@@ -203,7 +203,7 @@ Items marked **[ASK]** could materially change the design. They were not sent as
 
 ## 7. Verification (Phase 5)
 
-Run from a fresh `git clone` using only the README: `make up` -> stack healthy; all five documented logins return 200; 172 sample episodes seeded; `make venv && make test` -> **199 passed**; `make lint` -> ruff clean, frontend type-check clean. UI exercised by hand in a browser as operator and client (create, assign, blocked delivery, deliver, accept, audit history, live updates).
+Run from a fresh `git clone` using only the README: `make up` -> stack healthy; all five documented logins return 200; 172 sample episodes seeded; `make venv && make test` -> **214 passed**; `make lint` -> ruff clean, frontend type-check clean. UI exercised by hand in a browser as operator and client (create, assign, blocked delivery, deliver, accept, audit history, live updates).
 
 | Req | Evidence |
 |---|---|
@@ -222,9 +222,9 @@ Run from a fresh `git clone` using only the README: `make up` -> stack healthy; 
 | R26, R27 | `tests/test_operability.py`; JSON log lines visible in `docker compose logs api` |
 | R28-R30 | Manual browser run-through; frontend type-checks and builds in CI and `make lint` |
 | R31 | Fresh-clone `make up` (and `docker compose up --build -d --wait`) |
-| R32 | `make test`, 199 tests |
+| R32 | `make test`, 214 tests |
 | R33 | `.github/workflows/ci.yml` written; **not executed on GitHub from here** |
-| R34 | SSE: `tests/test_events.py` + curl through nginx showing an operator receiving `request.created` while a client gets 403 |
+| R34 | Primary: SSE (`tests/test_events.py`; curl through nginx and through Caddy+nginx; browser shows live updates). Extra: background export (`tests/test_exports.py`, real-timing run: 10 episodes drained in 18 s with 2 retried failures). Extra, partial: deployment tooling verified locally over HTTPS (`docs/DEPLOY.md`); **not published, no URL** |
 | R35-R40 | NOTES.md sections 1-6 |
 | R42-R44 | 9 incremental commits; scope kept to the brief; assumptions recorded |
 | R45 | README (run, test, credentials), NOTES, CI file |
