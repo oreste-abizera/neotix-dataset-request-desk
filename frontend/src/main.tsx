@@ -1,10 +1,19 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./styles.css";
+import App from "./app/App";
+import { migrateLegacyHash } from "./app/legacy-hash";
+import { Providers } from "./app/providers";
+import "./styles/index.css";
 
-createRoot(document.getElementById("root")!).render(
+migrateLegacyHash();
+
+const root = document.getElementById("root");
+if (!root) throw new Error("#root element is missing from index.html");
+
+createRoot(root).render(
   <StrictMode>
-    <App />
+    <Providers>
+      <App />
+    </Providers>
   </StrictMode>,
 );

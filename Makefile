@@ -27,20 +27,24 @@ $(PY)/python:
 
 venv: $(PY)/python  ## create backend/.venv with dev dependencies (needs Python 3.11+)
 
+test-web:        ## frontend unit, flow and accessibility tests (needs Node 22)
+	cd frontend && npm ci --no-audit --no-fund --silent && npm test
+
 test-local: venv ## same tests using the local venv (starts the db container; needs Python 3.11+)
 	$(COMPOSE) up -d --wait db
 	cd backend && ../$(PY)/python -m pytest
 
-lint: venv       ## ruff lint + format check, and frontend type-check
+lint: venv       ## ruff lint + format check, and frontend type-check, lint and format check
 	cd backend && ../$(PY)/ruff check . && ../$(PY)/ruff format --check .
-	cd frontend && npm ci --no-audit --no-fund --silent && npm run --silent typecheck
+	cd frontend && npm ci --no-audit --no-fund --silent && npm run --silent typecheck && npm run --silent lint && npm run --silent format:check
 
-fmt:             ## auto-format backend
+fmt:             ## auto-format backend and frontend
 	cd backend && ../$(PY)/ruff format . && ../$(PY)/ruff check . --fix
+	cd frontend && npm run --silent format
 
 seed-large:      ## generate and import 200,000 clean episodes (performance demo)
 	python3 seed/generate_episodes.py 200000 > seed/episodes_large.csv
 	$(COMPOSE) exec -T api sh -c 'cat > /tmp/large.csv' < seed/episodes_large.csv
 	$(COMPOSE) exec api python -m app.cli import-episodes /tmp/large.csv | head -12
 
-.PHONY: help up down reset logs venv test test-local lint fmt seed-large
+.PHONY: help up down reset logs venv test test-local test-web lint fmt seed-large
