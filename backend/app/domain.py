@@ -23,3 +23,12 @@ ASSIGNMENT_OPEN_STATUSES = (SUBMITTED, IN_PROGRESS)
 KNOWN_ROBOTS = ("arm-01", "arm-02", "arm-03", "mobile-01", "humanoid-01")
 
 MIN_DURATION_SECONDS, MAX_DURATION_SECONDS = 1, 3600
+
+# Simulated per-episode export job (stretch item): queued -> running -> succeeded | failed
+EXPORT_PENDING, EXPORT_RUNNING, EXPORT_SUCCEEDED, EXPORT_FAILED = (
+    "pending",
+    "running",
+    "succeeded",
+    "failed",
+)
+EXPORT_STATUSES = (EXPORT_PENDING, EXPORT_RUNNING, EXPORT_SUCCEEDED, EXPORT_FAILED)

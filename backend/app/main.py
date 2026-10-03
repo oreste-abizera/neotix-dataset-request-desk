@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, FastAPI, Request
@@ -9,9 +10,24 @@ from app.routers import analytics, auth, episodes, events, health, imports, requ
 
 configure_logging()
 
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    pool = None
+    if settings.run_worker:
+        from app.worker import WorkerPool
+
+        pool = WorkerPool(settings.worker_concurrency)
+        pool.start()
+    yield
+    if pool:
+        pool.stop()
+
+
 _dev = settings.app_env == "development"
 app = FastAPI(
     title="Dataset Request Desk",
+    lifespan=lifespan,
     # Interactive docs are a convenience for development; nothing is public outside /health.
     docs_url="/api/docs" if _dev else None,
     openapi_url="/api/openapi.json" if _dev else None,

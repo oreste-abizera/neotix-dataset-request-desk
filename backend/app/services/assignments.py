@@ -6,6 +6,7 @@ from app.domain import ASSIGNABLE_QUALITIES, ASSIGNMENT_OPEN_STATUSES
 from app.errors import Conflict, NotFound
 from app.events import broker
 from app.models import Assignment, Episode, User
+from app.services import exports
 from app.services.requests import get_visible_request
 
 
@@ -53,14 +54,17 @@ def list_task_names(db: DbSession) -> list[str]:
     return list(db.scalars(select(Episode.task_name).distinct().order_by(Episode.task_name)))
 
 
-def episodes_for_request(db: DbSession, request_id: int) -> list[dict]:
+def episodes_for_request(
+    db: DbSession, request_id: int, *, include_exports: bool = False
+) -> list[dict]:
     rows = db.scalars(
         select(Episode)
         .join(Assignment, Assignment.episode_id == Episode.episode_id)
         .where(Assignment.request_id == request_id)
         .order_by(Episode.episode_id)
     ).all()
-    return [_episode_dict(e, request_id) for e in rows]
+    job = exports.exports_for_request(db, request_id) if include_exports else {}
+    return [{**_episode_dict(e, request_id), "export": job.get(e.episode_id)} for e in rows]
 
 
 def assign_episodes(db: DbSession, actor: User, request_id: int, episode_ids: list[str]) -> int:
@@ -109,6 +113,8 @@ def assign_episodes(db: DbSession, actor: User, request_id: int, episode_ids: li
     db.add_all(
         Assignment(episode_id=eid, request_id=request.id, assigned_by=actor.id) for eid in ids
     )
+    db.flush()
+    exports.enqueue(db, request.id, ids)  # same transaction: a job exists iff the assignment does
     try:
         db.commit()
     except IntegrityError:
@@ -136,5 +142,6 @@ def unassign_episode(db: DbSession, actor: User, request_id: int, episode_id: st
     if result.rowcount == 0:
         db.rollback()
         raise NotFound("That episode is not assigned to this request.")
+    exports.cancel(db, request.id, episode_id)
     db.commit()
     broker.publish({"type": "request.assignments_changed", "request_id": request_id})

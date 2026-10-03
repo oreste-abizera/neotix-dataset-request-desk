@@ -144,7 +144,7 @@ def get_request_detail(db: DbSession, user: User, request_id: int) -> dict:
             }
             for e in events
         ],
-        "episodes": episodes_for_request(db, request.id),
+        "episodes": episodes_for_request(db, request.id, include_exports=user.role != CLIENT),
         "allowed_transitions": allowed_transitions(request, user),
     }
 

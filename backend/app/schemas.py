@@ -82,6 +82,15 @@ class StatusEventOut(Out):
     created_at: datetime
 
 
+class ExportOut(Out):
+    status: str
+    attempts: int
+    max_attempts: int
+    last_error: str | None
+    next_attempt_at: datetime | None
+    finished_at: datetime | None
+
+
 class EpisodeOut(Out):
     episode_id: str
     robot_id: str
@@ -91,6 +100,7 @@ class EpisodeOut(Out):
     operator_name: str | None
     quality: str
     assigned_request_id: int | None = None
+    export: ExportOut | None = None  # staff only; null for clients
 
 
 class RequestOut(Out):

@@ -15,7 +15,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-from app.domain import QUALITIES, ROLES, STATUSES
+from app.domain import EXPORT_STATUSES, QUALITIES, ROLES, STATUSES
 
 
 def _in(column: str, values: tuple[str, ...]) -> str:
@@ -152,3 +152,34 @@ class Assignment(Base):
 
     episode: Mapped[Episode] = relationship(back_populates="assignment")
     request: Mapped[Request] = relationship(back_populates="assignments")
+
+
+class EpisodeExport(Base):
+    """One export job per assigned episode (the primary key is what makes enqueueing idempotent).
+
+    Lifecycle: pending -> running -> succeeded, or back to pending with a backoff after a failure,
+    and to failed once attempts run out. A running job holds a lease; if its worker dies the lease
+    expires and another worker takes the job over.
+    """
+
+    __tablename__ = "episode_exports"
+    __table_args__ = (
+        CheckConstraint(_in("status", EXPORT_STATUSES), name="ck_exports_status"),
+        Index("ix_exports_claim", "status", "next_attempt_at"),
+        Index("ix_exports_request", "request_id"),
+    )
+
+    episode_id: Mapped[str] = mapped_column(
+        ForeignKey("episodes.episode_id", ondelete="CASCADE"), primary_key=True
+    )
+    request_id: Mapped[int] = mapped_column(ForeignKey("requests.id", ondelete="CASCADE"))
+    status: Mapped[str] = mapped_column(String(16), default="pending", server_default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, default=0, server_default=text("0"))
+    last_error: Mapped[str | None] = mapped_column(Text)
+    next_attempt_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

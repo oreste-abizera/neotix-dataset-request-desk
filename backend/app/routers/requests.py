@@ -12,7 +12,7 @@ from app.schemas import (
     Status,
     TransitionIn,
 )
-from app.services import assignments, requests
+from app.services import assignments, exports, requests
 
 router = APIRouter(prefix="/requests", tags=["requests"])
 
@@ -56,4 +56,12 @@ def assign(request_id: int, data: AssignIn, staff: Staff, db: Db):
 @router.delete("/{request_id}/assignments/{episode_id}", response_model=RequestDetailOut)
 def unassign(request_id: int, episode_id: str, staff: Staff, db: Db):
     assignments.unassign_episode(db, staff, request_id, episode_id)
+    return requests.get_request_detail(db, staff, request_id)
+
+
+@router.post("/{request_id}/exports/retry", response_model=RequestDetailOut)
+def retry_failed_exports(request_id: int, staff: Staff, db: Db):
+    """Re-queue exports that ran out of attempts."""
+    requests.get_visible_request(db, staff, request_id)
+    exports.retry_failed(db, request_id)
     return requests.get_request_detail(db, staff, request_id)
