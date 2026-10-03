@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     seed_sample_episodes: bool = False
     # Staging servers run with APP_ENV=production but may still want the demo users.
     seed_force: bool = False
+    # Also create realistic demo activity (requests in every state, history, export jobs).
+    seed_demo_activity: bool = False
     # Cookie is only marked Secure outside development (dev runs on plain http).
     cookie_name: str = "neotix_session"
 

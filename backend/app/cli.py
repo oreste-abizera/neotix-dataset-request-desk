@@ -1,4 +1,4 @@
-"""Operational commands:  python -m app.cli seed | import-episodes FILE | create-admin"""
+"""Operational commands: python -m app.cli seed | seed-demo | import-episodes FILE | create-admin"""
 
 import argparse
 import getpass
@@ -7,6 +7,7 @@ import os
 import sys
 from pathlib import Path
 
+from app import demo_data
 from app.config import settings
 from app.db import SessionLocal
 from app.errors import AppError
@@ -29,6 +30,13 @@ def seed(force: bool = False) -> None:
                 f"sample episodes imported: {report['imported']} "
                 f"(skipped {report['skipped_count']}, see /api/imports/{report['import_run_id']})"
             )
+        if settings.seed_demo_activity:
+            print(f"demo activity: {demo_data.populate(db)}")
+
+
+def seed_demo() -> None:
+    with SessionLocal() as db:
+        print(f"demo activity: {demo_data.populate(db)}")
 
 
 def import_episodes(path: Path) -> None:
@@ -59,6 +67,9 @@ def main(argv: list[str] | None = None) -> None:
     sub = parser.add_subparsers(dest="command", required=True)
     s = sub.add_parser("seed", help="create demo users (and sample episodes if enabled)")
     s.add_argument("--force", action="store_true")
+    sub.add_parser(
+        "seed-demo", help="add realistic demo requests, history and episodes (idempotent)"
+    )
     i = sub.add_parser("import-episodes", help="import an episodes CSV; prints the report")
     i.add_argument("file", type=Path)
     a = sub.add_parser(
@@ -70,6 +81,8 @@ def main(argv: list[str] | None = None) -> None:
     if args.command == "create-admin":
         password = os.environ.get("ADMIN_PASSWORD") or getpass.getpass("Password: ")
         create_admin(args.email, args.name, password)
+    elif args.command == "seed-demo":
+        seed_demo()
     elif args.command == "seed":
         seed(args.force)
     else:

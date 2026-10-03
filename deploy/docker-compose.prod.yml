@@ -36,6 +36,7 @@ services:
       # and sample episodes (idempotent, never touches existing accounts). Leave off for real use.
       SEED_FORCE: ${SEED_DEMO_DATA:-false}
       SEED_SAMPLE_EPISODES: ${SEED_DEMO_DATA:-false}
+      SEED_DEMO_ACTIVITY: ${SEED_DEMO_DATA:-false}
     depends_on:
       db:
         condition: service_healthy
