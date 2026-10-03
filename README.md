@@ -8,7 +8,44 @@ Design reasoning, trade-offs and what I would do next are in **[NOTES.md](NOTES.
 
 ## Live staging deployment
 
-**https://desk.oreste.dev** runs the production compose stack (`deploy/`) on a single server: Caddy with an automatic Let's Encrypt certificate and HSTS, only ports 80/443 exposed, the database and API on a private network, API docs disabled. It is a **staging** environment seeded with the demo users below and the sample episodes (`SEED_DEMO_DATA=true`), so you can sign in and try the whole workflow. The demo passwords are public by design: please don't enter real data. How secrets and the database are managed, backups, and the GitHub Actions deploy job are in [docs/DEPLOY.md](docs/DEPLOY.md).
+**https://desk.oreste.dev** runs the production compose stack (`deploy/`) on a single server: Caddy with an automatic Let's Encrypt certificate and HSTS, only ports 80/443 exposed, the database and API on a private network, API docs disabled. It is a **staging** environment seeded with the demo users below, 1,500+ episodes and **48 requests in every workflow state** (with history, assigned episodes and export jobs, including one failed batch to retry), so there is something to look at on every screen (`SEED_DEMO_DATA=true`). The demo passwords are public by design: please don't enter real data. How secrets and the database are managed, backups, and the GitHub Actions deploy job are in [docs/DEPLOY.md](docs/DEPLOY.md).
+
+## Screenshots
+
+All captured from the running app with the demo data (the staging site is seeded the same way). Click an image for full size.
+
+### Client: ask for a dataset, review the delivery
+<table>
+<tr><td width="50%"><a href="docs/screenshots/01-login.png"><img src="docs/screenshots/01-login.png" alt="Sign in"></a><br><sub><b>Sign in</b></sub></td><td width="50%"><a href="docs/screenshots/02-client-requests.png"><img src="docs/screenshots/02-client-requests.png" alt="My requests: status, progress, due dates"></a><br><sub><b>My requests: status, progress, due dates</b></sub></td></tr>
+<tr><td width="50%"><a href="docs/screenshots/03-client-new-request.png"><img src="docs/screenshots/03-client-new-request.png" alt="New request: inline validation"></a><br><sub><b>New request: inline validation</b></sub></td><td width="50%"><a href="docs/screenshots/04-client-review-delivery.png"><img src="docs/screenshots/04-client-review-delivery.png" alt="A delivered request: review the episodes, accept or reject"></a><br><sub><b>A delivered request: review the episodes, accept or reject</b></sub></td></tr>
+<tr><td width="50%"><a href="docs/screenshots/05-client-confirm-reject.png"><img src="docs/screenshots/05-client-confirm-reject.png" alt="Consequential actions ask for confirmation"></a><br><sub><b>Consequential actions ask for confirmation</b></sub></td><td></td></tr>
+</table>
+
+### Operator: work the queue, assign episodes, deliver
+<table>
+<tr><td width="50%"><a href="docs/screenshots/06-operator-queue.png"><img src="docs/screenshots/06-operator-queue.png" alt="The queue: status filters, progress, deadlines, live updates"></a><br><sub><b>The queue: status filters, progress, deadlines, live updates</b></sub></td><td width="50%"><a href="docs/screenshots/07-operator-request-detail.png"><img src="docs/screenshots/07-operator-request-detail.png" alt="Request page: episodes, per-episode export status, history"></a><br><sub><b>Request page: episodes, per-episode export status, history</b></sub></td></tr>
+<tr><td width="50%"><a href="docs/screenshots/08-operator-assign-episodes.png"><img src="docs/screenshots/08-operator-assign-episodes.png" alt="Assign episodes: filters, selection, bad-quality episodes locked"></a><br><sub><b>Assign episodes: filters, selection, bad-quality episodes locked</b></sub></td><td width="50%"><a href="docs/screenshots/09-operator-failed-exports.png"><img src="docs/screenshots/09-operator-failed-exports.png" alt="Failed background exports, with a one-click retry"></a><br><sub><b>Failed background exports, with a one-click retry</b></sub></td></tr>
+<tr><td width="50%"><a href="docs/screenshots/10-operator-confirm-delivery.png"><img src="docs/screenshots/10-operator-confirm-delivery.png" alt="Delivering asks for confirmation (it locks the episode set)"></a><br><sub><b>Delivering asks for confirmation (it locks the episode set)</b></sub></td><td></td></tr>
+</table>
+
+### Admin: import, analytics, users, shortcuts
+<table>
+<tr><td width="50%"><a href="docs/screenshots/11-import-report.png"><img src="docs/screenshots/11-import-report.png" alt="CSV import report: imported, skipped and why, with a downloadable list"></a><br><sub><b>CSV import report: imported, skipped and why, with a downloadable list</b></sub></td><td width="50%"><a href="docs/screenshots/12-analytics.png"><img src="docs/screenshots/12-analytics.png" alt="Analytics: fulfilment, median time to delivery, episodes per robot"></a><br><sub><b>Analytics: fulfilment, median time to delivery, episodes per robot</b></sub></td></tr>
+<tr><td width="50%"><a href="docs/screenshots/13-users.png"><img src="docs/screenshots/13-users.png" alt="Users: roles and activation, protected against locking yourself out"></a><br><sub><b>Users: roles and activation, protected against locking yourself out</b></sub></td><td width="50%"><a href="docs/screenshots/14-create-user.png"><img src="docs/screenshots/14-create-user.png" alt="Create a user with inline validation"></a><br><sub><b>Create a user with inline validation</b></sub></td></tr>
+<tr><td width="50%"><a href="docs/screenshots/15-command-menu.png"><img src="docs/screenshots/15-command-menu.png" alt="Command menu (Ctrl/⌘ K): navigate and jump to a request"></a><br><sub><b>Command menu (Ctrl/⌘ K): navigate and jump to a request</b></sub></td><td width="50%"><a href="docs/screenshots/16-keyboard-shortcuts.png"><img src="docs/screenshots/16-keyboard-shortcuts.png" alt="Keyboard shortcuts (?)"></a><br><sub><b>Keyboard shortcuts (?)</b></sub></td></tr>
+</table>
+
+### Dark theme
+<table>
+<tr><td width="50%"><a href="docs/screenshots/17-dark-queue.png"><img src="docs/screenshots/17-dark-queue.png" alt="Dark theme: queue"></a><br><sub><b>Dark theme: queue</b></sub></td><td width="50%"><a href="docs/screenshots/18-dark-request.png"><img src="docs/screenshots/18-dark-request.png" alt="Dark theme: request page"></a><br><sub><b>Dark theme: request page</b></sub></td></tr>
+</table>
+
+### On a phone
+<table>
+<tr><td width="50%"><a href="docs/screenshots/19-mobile-queue.png"><img src="docs/screenshots/19-mobile-queue.png" alt="Queue as cards"></a><br><sub><b>Queue as cards</b></sub></td><td width="50%"><a href="docs/screenshots/20-mobile-request.png"><img src="docs/screenshots/20-mobile-request.png" alt="Request page: episodes as rows, nothing to scroll sideways"></a><br><sub><b>Request page: episodes as rows, nothing to scroll sideways</b></sub></td></tr>
+<tr><td width="50%"><a href="docs/screenshots/21-mobile-assign.png"><img src="docs/screenshots/21-mobile-assign.png" alt="Assign episodes as a bottom sheet"></a><br><sub><b>Assign episodes as a bottom sheet</b></sub></td><td width="50%"><a href="docs/screenshots/22-mobile-menu.png"><img src="docs/screenshots/22-mobile-menu.png" alt="Navigation sheet"></a><br><sub><b>Navigation sheet</b></sub></td></tr>
+</table>
+
 
 ## Run it (one command)
 
@@ -36,6 +73,7 @@ Stop with `make down`; wipe all data with `make reset`. Without `make`, use the 
 | operator | `ops1@oreste.dev`, `ops2@oreste.dev` | `ops123` |
 | client | `client-a@oreste.dev` (Acme Robotics) | `client123` |
 | client | `client-b@oreste.dev` (Beta Labs) | `client123` |
+| client | `client-c@oreste.dev` (Northwind Labs), `client-d@oreste.dev` (Globex Robotics) | `client123` (only in the demo-activity data) |
 
 Passwords are stored as Argon2id hashes. The seed refuses to run with `APP_ENV=production`.
 

@@ -121,7 +121,7 @@ frontend/src/
 ## 9. Verification checklist (Phase 5): results
 
 - [x] `npm run lint`, `typecheck`, `test`, `build` green; no `any`; no runtime console errors on signed-in pages (the only console message is the expected 401 from the session probe when a signed-out visitor opens a protected URL)
-- [x] Every page checked at 375, 768 and 1280 px, in light and dark: no horizontal page scroll, targets >= 24 px (one 21 px link found and fixed)
+- [x] Every page checked at 390 and 1280 px, in light and dark: no horizontal page scroll, targets >= 24 px (one 21 px link found and fixed). **Correction:** my first "mobile" checks in the browser pane silently ran at 656 px because the viewport emulation had reset, so they missed a real overflow; it was found later with true device emulation (see below)
 - [x] Lighthouse (final run, local build): see the table below. Accessibility 100, Best Practices 100 everywhere
 - [x] axe-core in a real browser (real layout, so contrast is included): **0 violations** on queue, detail, import, analytics and users in both themes; axe in jsdom for login, queue, detail, new request, users, import, analytics
 - [x] Bundle budget met: entry **76 kB** gzip (budget 120, was 74 before the upgrade), CSS **8.9 kB** gzip, every page its own lazy chunk (largest 6 kB), signed-in shell 12.7 kB lazy, command palette 5.5 kB lazy
@@ -146,6 +146,7 @@ The new UI does much more per page (design system, dialogs, toasts, live updates
 - **Assign episodes is always a sheet** (bottom sheet on phones, side panel on desktop), not inline on desktop: one implementation, keeps the request visible behind it.
 - **Command palette and chart** as planned; the chart is plain elements, weekly buckets above 45 days.
 - **Real defects found by tests or measurement, all fixed:** session-expiry left the UI on a dead session (`queryClient.clear()` detaches observers; fixed with `resetSession()`); focus was lost to `<body>` after closing a dialog opened by a click that did not focus its button (fixed with `useFocusReturn`); duplicate `aria-describedby` ids on the Users page (axe only reports these as "needs review", so there is now an explicit unique-id test); a 21 px back link; the sticky assign footer floating above the sheet's bottom edge; no response compression; shell and toaster in the entry bundle.
+- **Found later, with real device emulation (Chrome, 390 px):** every request page with episodes was 244-316 px wider than a phone, for two reasons: a grid column that could not shrink below its table's width (fixed with `grid-cols-1` and `min-w-0`), and a visually-hidden `sr-only` label inside the table's scroll container that was positioned against the page (fixed with `position: relative` on the container). Episodes now render as compact rows on phones. After the fixes, a script measuring `scrollWidth` on every page at 390 px (13 routes, three roles) reports 0 overflow, and axe in real Chrome reports 0 violations in desktop-light and mobile-dark.
 - **Mutation checks:** 9 deliberate breakages of UI rules (confirmation removed, role guard opened, bad-quality selectable, self-protection removed, optimistic update/rollback removed, staff column leaked to clients, 401 handling removed, focus return removed, duplicate ids) are each caught by the test-suite (67 tests).
 
 ## 10. Risks

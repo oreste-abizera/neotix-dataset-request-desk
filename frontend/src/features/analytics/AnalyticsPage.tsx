@@ -93,7 +93,7 @@ function Content({ data, from, to }: { data: Analytics; from: string; to: string
         <h2 id="fulfilment" className="mb-3 text-md">
           Request fulfilment
         </h2>
-        <dl className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
+        <dl className="grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] items-start gap-3">
           {STATUS_ORDER.map((s: Status) => (
             <Stat key={s} label={STATUS_LABEL[s]} value={r.by_status[s]} />
           ))}
@@ -102,7 +102,7 @@ function Content({ data, from, to }: { data: Analytics; from: string; to: string
             label="Median time to delivery"
             value={formatDuration(r.median_seconds_submitted_to_delivered)}
             hint={`${plural(r.delivered_count, "request")} delivered`}
-            className="col-span-2 md:col-span-1"
+            className="col-span-2"
           />
         </dl>
       </section>

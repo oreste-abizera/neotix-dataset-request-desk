@@ -47,7 +47,7 @@ Internet ─:443─► Caddy (automatic HTTPS, HSTS) ─► nginx (static UI, /a
 
 ## Staging mode: demo users and sample data
 
-Production refuses to seed demo users. For a staging/demo server, add `SEED_DEMO_DATA=true` to `deploy/.env.prod` and redeploy: every start then creates the documented demo users (README table) and imports the sample episodes, idempotently. Existing accounts are never changed, so if you already created `admin@oreste.dev` yourself, its password stays yours. Everything else about the stack stays production-style (HTTPS, `Secure` cookies, API docs off). The demo passwords are public, so use this only with throw-away data.
+Production refuses to seed demo users. For a staging/demo server, add `SEED_DEMO_DATA=true` to `deploy/.env.prod` and redeploy: every start then creates the documented demo users (README table), imports the sample episodes, and adds realistic demo activity (extra demo clients, about 1,400 more episodes, 48 requests in every state with history, assignments and export jobs; see `backend/app/demo_data.py`), idempotently. To add the activity to a running server without waiting for a deploy: `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod exec api python -m app.cli seed-demo`. Existing accounts are never changed, so if you already created `admin@oreste.dev` yourself, its password stays yours. Everything else about the stack stays production-style (HTTPS, `Secure` cookies, API docs off). The demo passwords are public, so use this only with throw-away data.
 
 ## Continuous deployment (GitHub Actions)
 

@@ -1,11 +1,20 @@
 import type { HTMLAttributes, ReactNode, TdHTMLAttributes, ThHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
-/** Horizontal scroll container that is keyboard-reachable and labelled (axe: scrollable-region-focusable). */
+/**
+ * Horizontal scroll container that is keyboard-reachable and labelled (axe: scrollable-region-focusable).
+ * `relative` matters: absolutely positioned sr-only text inside the table would otherwise be placed
+ * against the page and widen it on small screens.
+ */
 export function TableScroll({ label, children }: { label: string; children: ReactNode }) {
   return (
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- scrollable regions must be focusable
-    <div role="region" aria-label={label} tabIndex={0} className="overflow-x-auto rounded-md">
+    <div
+      role="region"
+      aria-label={label}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- scrollable regions must be focusable
+      tabIndex={0}
+      className="relative overflow-x-auto rounded-md"
+    >
       {children}
     </div>
   );

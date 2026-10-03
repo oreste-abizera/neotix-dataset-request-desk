@@ -75,15 +75,60 @@ function Detail({ label, children }: { label: string; children: React.ReactNode 
   );
 }
 
-function EpisodesTable({
-  episodes,
-  showExport,
-  onRemove,
-}: {
+interface EpisodesViewProps {
   episodes: Episode[];
   showExport: boolean;
   onRemove?: (e: Episode) => void;
-}) {
+}
+
+/** Rows on phones (nothing to scroll sideways), a table from `md` up. */
+function EpisodesView(props: EpisodesViewProps) {
+  return (
+    <>
+      <div className="hidden md:block">
+        <EpisodesTable {...props} />
+      </div>
+      <EpisodesList {...props} />
+    </>
+  );
+}
+
+function EpisodesList({ episodes, showExport, onRemove }: EpisodesViewProps) {
+  return (
+    <ul className="divide-y divide-line md:hidden" aria-label="Assigned episodes">
+      {episodes.map((e) => (
+        <li key={e.episode_id} className="flex flex-col gap-2 px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="font-mono text-sm">{e.episode_id}</span>
+            <span className="text-sm font-medium">{QUALITY_LABEL[e.quality]}</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {e.robot_id} · <span className="capitalize">{e.task_name}</span> ·{" "}
+            {formatDate(e.recorded_at)}
+          </p>
+          {(showExport || onRemove) && (
+            <div className="flex items-center justify-between gap-3">
+              {showExport ? <ExportBadge info={e.export} /> : <span />}
+              {onRemove && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRemove(e)}
+                  aria-label={`Remove ${e.episode_id}`}
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                  Remove
+                </Button>
+              )}
+            </div>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function EpisodesTable({ episodes, showExport, onRemove }: EpisodesViewProps) {
   return (
     <TableScroll label="Assigned episodes">
       <Table>
@@ -266,8 +311,8 @@ export default function RequestDetailPage() {
           ` ${plural(missing, "more episode")} needed before it can be delivered.`}
       </p>
 
-      <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="flex flex-col gap-5 lg:col-span-2">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
+        <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
           <Card>
             <CardHeader
               title={`Episodes (${r.assigned_count} of ${r.episodes_requested})`}
@@ -340,7 +385,7 @@ export default function RequestDetailPage() {
                 }
               />
             ) : (
-              <EpisodesTable
+              <EpisodesView
                 episodes={r.episodes}
                 showExport={staff}
                 onRemove={staff && editable ? onRemove : undefined}
@@ -349,7 +394,7 @@ export default function RequestDetailPage() {
           </Card>
         </div>
 
-        <div className="flex flex-col gap-5">
+        <div className="flex min-w-0 flex-col gap-5">
           <Card>
             <CardHeader title="Details" />
             <CardBody>

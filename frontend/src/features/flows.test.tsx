@@ -334,13 +334,13 @@ describe("request detail", () => {
     });
     renderApp("/requests/1");
     const user = userEvent.setup();
-    await user.click(await screen.findByRole("button", { name: "Remove EP-1" }));
+    await user.click((await screen.findAllByRole("button", { name: "Remove EP-1" }))[0]!);
 
-    await waitFor(() => expect(screen.queryByText("EP-1")).not.toBeInTheDocument()); // optimistic
-    expect(screen.getByText("EP-2")).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryAllByText("EP-1")).toHaveLength(0)); // optimistic
+    expect(screen.getAllByText("EP-2").length).toBeGreaterThan(0);
 
     refuse();
-    expect(await screen.findByText("EP-1")).toBeInTheDocument(); // rolled back
+    expect((await screen.findAllByText("EP-1")).length).toBeGreaterThan(0); // rolled back
   });
 
   it("explains a request that does not exist", async () => {
@@ -374,7 +374,7 @@ describe("request detail", () => {
       ),
     });
     const { container } = renderApp("/requests/1");
-    await screen.findByText("EP-1");
+    await screen.findAllByText("EP-1");
     await expectNoA11yViolations(container);
   });
 });
