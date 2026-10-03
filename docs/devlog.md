@@ -11,3 +11,8 @@
 - First median query filtered `submitted_at` *after* aggregating events, so `EXPLAIN ANALYZE` showed it reading every
   request however narrow the date range. Rewrote it to filter on indexed `requests.created_at` first (migration 0002);
   narrow window now uses an index scan (8ms -> 1.7ms at 5k requests, and no longer grows with total requests).
+- SSE test `test_service_actions_publish_events_to_subscribers` timed out waiting for the 3rd event: `create_request`
+  never published. My scripted string-replace had silently not matched (ruff had already re-wrapped that line).
+  Lesson: scripted edits must assert they changed something; the behaviour test caught it, not the edit.
+- Self-review found the importer would raise `csv.Error` (field > 128 KB) and psycopg `DataError` (NUL byte) as 500s;
+  both now return 422 `invalid_csv` before anything is written (test added).

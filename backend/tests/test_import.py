@@ -147,3 +147,14 @@ def test_large_import_is_chunked_and_idempotent(db):
     second = importer.import_episodes(db, None, "big.csv", data)
     assert (first["imported"], second["imported"], second["unchanged"]) == (n, 0, n)
     assert count(db) == n
+
+
+def test_unparseable_files_are_rejected_cleanly_not_500(as_operator, db):
+    huge_field = b"EP-1,arm-01," + b"x" * 200_000 + b",2026-08-01T10:00:00,30,Aline,good\n"
+    r = upload(as_operator, HEADER.encode() + huge_field)
+    assert r.status_code == 422 and r.json()["error"]["code"] == "invalid_csv"
+    r = upload(
+        as_operator, HEADER.encode() + b"EP-2,arm-01,pick\x00cup,2026-08-01T10:00:00,30,A,good\n"
+    )
+    assert r.status_code == 422 and r.json()["error"]["code"] == "invalid_csv"
+    assert count(db) == 0  # nothing from either file was imported

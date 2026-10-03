@@ -2,16 +2,19 @@ from urllib.parse import urlparse
 
 from fastapi import APIRouter, FastAPI, Request
 
+from app.config import settings
 from app.errors import error_response, register_error_handlers
 from app.logging_setup import configure_logging, install_access_log
 from app.routers import analytics, auth, episodes, events, health, imports, requests, users
 
 configure_logging()
 
+_dev = settings.app_env == "development"
 app = FastAPI(
     title="Dataset Request Desk",
-    docs_url="/api/docs",
-    openapi_url="/api/openapi.json",
+    # Interactive docs are a convenience for development; nothing is public outside /health.
+    docs_url="/api/docs" if _dev else None,
+    openapi_url="/api/openapi.json" if _dev else None,
     redoc_url=None,
     swagger_ui_oauth2_redirect_url=None,
 )

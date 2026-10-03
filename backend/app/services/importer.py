@@ -26,7 +26,16 @@ def _parse(data: bytes, known_robots: frozenset[str], now: datetime):
         text = data.decode("utf-8-sig")
     except UnicodeDecodeError:
         raise Unprocessable("File is not valid UTF-8.", code="invalid_encoding") from None
+    if "\x00" in text:  # PostgreSQL text cannot hold NUL; refuse the file rather than half-import
+        raise Unprocessable("File contains NUL bytes.", code="invalid_csv")
     reader = csv.reader(io.StringIO(text, newline=""))
+    try:
+        return _parse_rows(reader, known_robots, now)
+    except csv.Error as exc:  # e.g. a field larger than the csv module's limit, bare quotes
+        raise Unprocessable(f"CSV could not be parsed: {exc}", code="invalid_csv") from None
+
+
+def _parse_rows(reader, known_robots: frozenset[str], now: datetime):
     header = next(reader, None)
     if header is None:
         raise Unprocessable("File is empty.", code="invalid_header")
