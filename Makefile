@@ -18,15 +18,20 @@ reset:           ## stop the stack and DELETE all data
 logs:            ## follow API logs (JSON, one line per request)
 	$(COMPOSE) logs -f api
 
-venv:            ## create backend/.venv with dev dependencies
+test:            ## run the whole backend test-suite in Docker against a real Postgres (no local Python needed)
+	$(COMPOSE) run --rm --build tests
+
+$(PY)/python:
 	python3 -m venv backend/.venv
 	$(PY)/pip install -q -r backend/requirements-dev.txt
 
-test:            ## run the backend test-suite against a real Postgres (starts the db container)
+venv: $(PY)/python  ## create backend/.venv with dev dependencies (needs Python 3.11+)
+
+test-local: venv ## same tests using the local venv (starts the db container; needs Python 3.11+)
 	$(COMPOSE) up -d --wait db
 	cd backend && ../$(PY)/python -m pytest
 
-lint:            ## ruff lint + format check, and frontend type-check
+lint: venv       ## ruff lint + format check, and frontend type-check
 	cd backend && ../$(PY)/ruff check . && ../$(PY)/ruff format --check .
 	cd frontend && npm ci --no-audit --no-fund --silent && npm run --silent typecheck
 
@@ -38,4 +43,4 @@ seed-large:      ## generate and import 200,000 clean episodes (performance demo
 	$(COMPOSE) exec -T api sh -c 'cat > /tmp/large.csv' < seed/episodes_large.csv
 	$(COMPOSE) exec api python -m app.cli import-episodes /tmp/large.csv | head -12
 
-.PHONY: help up down reset logs venv test lint fmt seed-large
+.PHONY: help up down reset logs venv test test-local lint fmt seed-large

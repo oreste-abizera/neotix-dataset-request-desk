@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-neotix_dev_password}
       POSTGRES_DB: ${POSTGRES_DB:-neotix}
     ports:
-      - "127.0.0.1:5433:5432"   # host port 5433 so it never clashes with a local Postgres
+      - "127.0.0.1:${DB_PORT:-5433}:5432"   # 5433 so it does not clash with a local Postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,6 +19,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+      target: runtime
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-neotix}:${POSTGRES_PASSWORD:-neotix_dev_password}@db:5432/${POSTGRES_DB:-neotix}
       APP_ENV: ${APP_ENV:-development}
@@ -27,12 +28,25 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:${API_PORT:-8000}:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 3s
       timeout: 3s
       retries: 30
+
+  # Not started by `up`: run with `make test` (or `docker compose run --rm tests`).
+  tests:
+    profiles: ["test"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: test
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-neotix}:${POSTGRES_PASSWORD:-neotix_dev_password}@db:5432/${POSTGRES_DB:-neotix}
+    depends_on:
+      db:
+        condition: service_healthy
 
   web:
     build: ./frontend
