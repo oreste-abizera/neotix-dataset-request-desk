@@ -22,3 +22,7 @@
   30 local loops). Fixed by moving add/flush/enqueue/commit inside the `try`, and added a deterministic regression test
   (one session holds an uncommitted assignment, a second operator blocks on it, then collides at flush time). Verified
   the new test fails against the old structure.
+- Frontend upgrade: the new session-expiry test failed (UI stayed on the signed-in shell after a 401). Cause:
+  `queryClient.clear()` detaches live observers, so the following `setQueryData(me, null)` updated a query nobody was
+  watching. A real bug in my first draft of the new data layer, found by the test, not by manual use. Fixed with one
+  `resetSession()` helper that removes every query except "who am I" and then sets it.
