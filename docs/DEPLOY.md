@@ -45,5 +45,24 @@ Internet ─:443─► Caddy (automatic HTTPS, HSTS) ─► nginx (static UI, /a
 5. Check `https://<your-domain>/health`. Caddy obtains and renews the certificate itself; keep the `caddy_data` volume.
 6. Update: `git pull && docker compose … up -d --build`.
 
+## Continuous deployment (GitHub Actions)
+
+Every push to `main` runs the CI jobs; if all pass, the `deploy` job (in `.github/workflows/ci.yml`) SSHes into the server and runs `deploy/deploy.sh <sha>`, which checks out that commit, rebuilds, waits for `/health` through Caddy, and **rolls back to the previous commit if the new one does not become healthy** (the job then fails, and the old version keeps serving). A final step smoke-tests the public URL. The job is skipped unless the repository variable `DEPLOY_HOST` exists, so forks and fresh clones are unaffected. Rollback and failure paths were rehearsed locally against the production compose file; the SSH leg itself can only be exercised on your server.
+
+**One-time setup**
+
+1. Do the manual deployment above once, so the repository and `deploy/.env.prod` exist on the server.
+2. Create a key used only for deployments (on your laptop) and authorise it on the server:
+   `ssh-keygen -t ed25519 -N "" -C github-actions-deploy -f ~/.ssh/neotix_deploy`
+   then append `~/.ssh/neotix_deploy.pub` to `~/.ssh/authorized_keys` of the server user that owns the checkout. Prefer a non-root user that is in the `docker` group.
+3. Capture the server's host key so CI can verify it instead of trusting on first use:
+   `ssh-keyscan -t ed25519 <server-ip>`
+4. In GitHub: *Settings → Secrets and variables → Actions*:
+   * **Secrets:** `SSH_PRIVATE_KEY` (contents of `~/.ssh/neotix_deploy`), `SSH_KNOWN_HOSTS` (output of step 3).
+   * **Variables:** `DEPLOY_HOST` (server IP), `DEPLOY_USER`, `DEPLOY_PATH` (absolute path of the checkout), `DEPLOY_URL` (e.g. `https://102-202-208-231.sslip.io`).
+5. Optional: *Settings → Environments → production → Required reviewers* adds a manual approval before each deploy.
+
+**Notes.** The deploy key can run commands as that server user, so keep it dedicated, never reuse it, and rotate it by replacing the secret and the `authorized_keys` line. Migrations run on start and roll forward only; keep them additive so a code rollback still works against the new schema. The script that runs on the server is the one from the *previously* deployed commit; changes to `deploy.sh` itself take effect one deploy later.
+
 ## Known limits of this setup
 Single host, single API instance (the SSE broker and login throttle are per-process, see NOTES §5), no automated off-site backups, no external monitoring. Importing large files holds them in memory (50 MB cap).

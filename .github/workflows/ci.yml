@@ -63,3 +63,34 @@ jobs:
             -d '{"email":"admin@oreste.dev","password":"admin123"}' localhost:8080/api/auth/login
       - if: failure()
         run: docker compose logs
+
+  deploy:
+    # Continuous deployment: only for pushes to main, only after every job above passed, and only
+    # when the repository has the DEPLOY_* variables configured (see docs/DEPLOY.md), so forks and
+    # unconfigured clones just skip this job instead of failing.
+    needs: [backend, frontend, compose]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_HOST != ''
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.DEPLOY_URL }}
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false   # never abort a deploy half-way
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts   # pinned host key: no trust-on-first-use
+      - name: Deploy ${{ github.sha }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}" \
+            "cd '${{ vars.DEPLOY_PATH }}' && ./deploy/deploy.sh '${{ github.sha }}'"
+      - name: Smoke test the public URL
+        run: curl -fsS --retry 5 --retry-delay 5 "${{ vars.DEPLOY_URL }}/health"

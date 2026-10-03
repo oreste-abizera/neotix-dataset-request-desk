@@ -67,7 +67,7 @@ CI (`.github/workflows/ci.yml`): backend lint + tests with a Postgres service, f
 |---|---|---|
 | Real-time (SSE) | Done (the one I picked) | `app/events.py`, `GET /api/events`, header shows "● Live"; `tests/test_events.py` |
 | Background work | Done (extra) | On assignment each episode gets an export job (sleep 2-5 s, fails 20%). Postgres-backed queue (`FOR UPDATE SKIP LOCKED`), idempotent enqueue (PK = episode id), leases so a dead worker's job is taken over, completion fenced by attempt number, up to 5 attempts with backoff, manual "Retry failed exports", per-episode status in the operator UI (live). `app/services/exports.py`, `app/worker.py`, `tests/test_exports.py` |
-| Deployment | Tooling done and verified locally; **not deployed publicly** | `deploy/docker-compose.prod.yml` (Caddy automatic HTTPS, only 80/443 exposed, no demo users), `python -m app.cli create-admin`, secrets and DB management in [docs/DEPLOY.md](docs/DEPLOY.md) |
+| Deployment | Tooling done and verified locally; **not deployed publicly** | `deploy/docker-compose.prod.yml` (Caddy automatic HTTPS, only 80/443 exposed, no demo users), `python -m app.cli create-admin`, secrets and DB management in [docs/DEPLOY.md](docs/DEPLOY.md); **CD**: green pushes to `main` deploy over SSH with a health check and automatic rollback |
 
 ## Architecture
 
