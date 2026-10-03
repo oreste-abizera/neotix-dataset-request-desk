@@ -50,7 +50,7 @@ Status legend: `[x]` done and verified (evidence in the table at the end), `[~]`
 ### Operations (B§4.3)
 - [x] R31. `docker compose up` (or one documented command) brings up DB, migrations, seed users, API, frontend from a clean clone. (B§4.3)
 - [x] R32. Automated tests runnable with one command. Priority areas: **authorization rules, status transitions, assignment rules, import idempotency**. Coverage % irrelevant; *choice* of tests matters. (B§4.3)
-- [~] R33. *(Nice to have)* CI (GitHub Actions) running tests. (B§4.3) Written; not yet executed on GitHub.
+- [x] R33. *(Nice to have)* CI (GitHub Actions) running tests. (B§4.3)
 
 ### Stretch, pick ONE, say which (B§4.4)
 - [x] R34. Real-time (WS/SSE) | Background export job (2-5s sleep, 20% random failure, safe retry, idempotent, per-episode status in UI) | Public deployment w/ HTTPS. Bonus only, never a penalty.
@@ -223,10 +223,10 @@ Run from a fresh `git clone` using only the README: `make up` -> stack healthy; 
 | R28-R30 | Manual browser run-through; frontend type-checks and builds in CI and `make lint` |
 | R31 | Fresh-clone `make up` (and `docker compose up --build -d --wait`) |
 | R32 | `make test`, 214 tests |
-| R33 | `.github/workflows/ci.yml` written; **not executed on GitHub from here** |
+| R33 | `.github/workflows/ci.yml` (backend lint + tests, frontend build, compose smoke test); run is green on GitHub Actions |
 | R34 | Primary: SSE (`tests/test_events.py`; curl through nginx and through Caddy+nginx; browser shows live updates). Extra: background export (`tests/test_exports.py`, real-timing run: 10 episodes drained in 18 s with 2 retried failures). Extra, partial: deployment tooling verified locally over HTTPS (`docs/DEPLOY.md`); **not published, no URL** |
 | R35-R40 | NOTES.md sections 1-6 |
 | R42-R44 | 9 incremental commits; scope kept to the brief; assumptions recorded |
 | R45 | README (run, test, credentials), NOTES, CI file |
 
-Gaps: R41 and R46 are the candidate's to do; no frontend automated tests; no screenshots in the README; CI unexecuted.
+Gaps: R41 and R46 are the candidate's to do; no frontend automated tests; no screenshots in the README; no public deployment.

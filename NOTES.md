@@ -27,7 +27,7 @@ users ──< sessions                        robots (reference data)
 
 ## 2. Left out, and the next two days
 
-Left out: password reset; editing/cancelling a request; correcting an existing episode; frontend automated tests (UI driven by hand in a browser); README screenshots; a public deployment (tooling exists, nothing is hosted); the CI file is written but has not run on GitHub.
+Left out: password reset; editing/cancelling a request; correcting an existing episode; frontend automated tests (UI driven by hand in a browser); README screenshots; a public deployment (tooling exists, nothing is hosted).
 
 With two more days: Playwright tests for the three roles; a reviewed "correct episode" flow with audit trail and an assignment-history view (stored, not shown); background CSV import with `COPY`; keyset pagination; actually hosting the `deploy/` stack; password reset and Redis-backed throttling.
 

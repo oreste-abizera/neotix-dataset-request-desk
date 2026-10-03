@@ -59,7 +59,7 @@ make test-local  # same tests with a local venv (needs Python 3.11+); also: make
 | Analytics | `test_analytics.py` | hand-computed per-day/robot counts, odd/even/empty medians, top-5 tie-break, range boundaries |
 | Operability | `test_operability.py`, `test_seed.py`, `test_events.py` | `/health` up/down, one JSON log line per request with user id, error envelope, seed idempotency, SSE |
 
-CI (`.github/workflows/ci.yml`): backend lint + tests with a Postgres service, frontend build, and a `docker compose up` smoke test. *Written but not yet run on GitHub from my side.*
+CI (`.github/workflows/ci.yml`): backend lint + tests with a Postgres service, frontend build, and a `docker compose up` smoke test. Green on GitHub Actions.
 
 ## Stretch items
 
