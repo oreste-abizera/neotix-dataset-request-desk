@@ -95,3 +95,12 @@ def test_login_request_is_logged_with_the_user_id(operator, anon, caplog):
     anon.post("/api/auth/login", json={"email": operator.email, "password": PASSWORD})
     record = next(r for r in caplog.records if r.name == "app.access")
     assert record.fields["path"] == "/api/auth/login" and record.fields["user_id"] == operator.id
+
+
+def test_caller_supplied_request_id_is_only_echoed_when_harmless(as_operator):
+    ok = as_operator.get("/api/requests", headers={"x-request-id": "trace-123"})
+    assert ok.headers["x-request-id"] == "trace-123"
+    for bad in ("A" * 5000, "has space", "inject\\nfake=log"):
+        r = as_operator.get("/api/requests", headers={"x-request-id": bad})
+        assert r.status_code == 200
+        assert r.headers["x-request-id"] != bad and len(r.headers["x-request-id"]) == 12

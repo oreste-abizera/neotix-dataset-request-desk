@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import sys
 import time
 import uuid
@@ -11,6 +12,7 @@ from starlette.responses import Response
 from app.errors import error_response
 
 access_logger = logging.getLogger("app.access")
+_SAFE_REQUEST_ID = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 
 
 class JsonFormatter(logging.Formatter):
@@ -41,7 +43,10 @@ def configure_logging() -> None:
 def install_access_log(app: FastAPI) -> None:
     @app.middleware("http")
     async def access_log(request: Request, call_next) -> Response:
-        request_id = request.headers.get("x-request-id") or uuid.uuid4().hex[:12]
+        # Honour a caller-supplied id (useful for tracing through a proxy) only if it is harmless;
+        # otherwise an arbitrary header would be echoed back and written into every log line.
+        supplied = request.headers.get("x-request-id", "")
+        request_id = supplied if _SAFE_REQUEST_ID.match(supplied) else uuid.uuid4().hex[:12]
         request.state.user_id = None  # filled in by the auth dependency
         start = time.perf_counter()
         status = 500
