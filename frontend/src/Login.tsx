@@ -3,7 +3,7 @@ import { api, describeError } from "./api";
 import { Card, ErrorText } from "./components";
 import type { User } from "./types";
 
-export default function Login({ onLogin }: { onLogin: (u: User) => void }) {
+export default function Login({ onLogin, notice }: { onLogin: (u: User) => void; notice?: string | null }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +26,7 @@ export default function Login({ onLogin }: { onLogin: (u: User) => void }) {
     <main className="narrow">
       <h1>Dataset Request Desk</h1>
       <Card title="Sign in">
+        {notice && <p className="muted" role="status">{notice}</p>}
         <form onSubmit={submit}>
           <label>
             Email

@@ -23,6 +23,7 @@ function useHash(): string {
 export default function App() {
   const [user, setUser] = useState<User | null | undefined>(undefined); // undefined = still checking
   const hash = useHash();
+  const [expired, setExpired] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const live = useLiveEvents(!!user && user.role !== "client", () => setRefreshKey((k) => k + 1));
 
@@ -35,8 +36,27 @@ export default function App() {
       });
   }, []);
 
+  useEffect(() => {
+    const on = () => {
+      setExpired(true);
+      setUser(null);
+    };
+    window.addEventListener("session-expired", on);
+    return () => window.removeEventListener("session-expired", on);
+  }, []);
+
   if (user === undefined) return <p className="narrow">Loading…</p>;
-  if (user === null) return <Login onLogin={(u) => { window.location.hash = "#/requests"; setUser(u); }} />;
+  if (user === null)
+    return (
+      <Login
+        notice={expired ? "Your session has ended. Please sign in again." : null}
+        onLogin={(u) => {
+          window.location.hash = "#/requests";
+          setExpired(false);
+          setUser(u);
+        }}
+      />
+    );
 
   const staff = user.role !== "client";
   const route = hash.replace(/^#/, "");

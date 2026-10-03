@@ -20,6 +20,11 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => null);
   if (!res.ok) {
+    // A 401 anywhere except the login form itself means the session ended (expiry, sign-out
+    // elsewhere, deactivation): tell the app to return to the login screen.
+    if (res.status === 401 && path !== "/auth/login" && path !== "/auth/me") {
+      window.dispatchEvent(new Event("session-expired"));
+    }
     const e = data?.error;
     throw new ApiError(res.status, e?.code ?? "error", e?.message ?? res.statusText, e?.details);
   }
