@@ -3,8 +3,12 @@
 Internal platform that replaces the spreadsheet for a robot-data company: clients request datasets, operators fulfil them by assigning recorded episodes, clients accept or reject the delivery. Operators can also import the (messy) episode CSV export and see analytics.
 
 **Stack:** Python 3.13 · FastAPI · SQLAlchemy 2 · Alembic · PostgreSQL 16 · React + TypeScript (Vite) behind nginx · Docker Compose.
-**Stretch items:** the one I chose is **real-time updates** (Server-Sent Events) for operators. I also built the **background export** job (§ below) and the **deployment tooling** (`deploy/`, `docs/DEPLOY.md`). The deployment is verified locally but **not published**: there is no public URL.
+**Stretch items:** the one I chose is **real-time updates** (Server-Sent Events) for operators. I also built the **background export** job (§ below) and **deployed it**: **https://desk.oreste.dev** (staging, demo data; details below).
 Design reasoning, trade-offs and what I would do next are in **[NOTES.md](NOTES.md)**.
+
+## Live staging deployment
+
+**https://desk.oreste.dev** runs the production compose stack (`deploy/`) on a single server: Caddy with an automatic Let's Encrypt certificate and HSTS, only ports 80/443 exposed, the database and API on a private network, API docs disabled. It is a **staging** environment seeded with the demo users below and the sample episodes (`SEED_DEMO_DATA=true`), so you can sign in and try the whole workflow. The demo passwords are public by design: please don't enter real data. How secrets and the database are managed, backups, and the GitHub Actions deploy job are in [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Run it (one command)
 
@@ -67,7 +71,7 @@ CI (`.github/workflows/ci.yml`): backend lint + tests with a Postgres service, f
 |---|---|---|
 | Real-time (SSE) | Done (the one I picked) | `app/events.py`, `GET /api/events`, header shows "● Live"; `tests/test_events.py` |
 | Background work | Done (extra) | On assignment each episode gets an export job (sleep 2-5 s, fails 20%). Postgres-backed queue (`FOR UPDATE SKIP LOCKED`), idempotent enqueue (PK = episode id), leases so a dead worker's job is taken over, completion fenced by attempt number, up to 5 attempts with backoff, manual "Retry failed exports", per-episode status in the operator UI (live). `app/services/exports.py`, `app/worker.py`, `tests/test_exports.py` |
-| Deployment | Tooling done and verified locally; **not deployed publicly** | `deploy/docker-compose.prod.yml` (Caddy automatic HTTPS, only 80/443 exposed, no demo users), `python -m app.cli create-admin`, secrets and DB management in [docs/DEPLOY.md](docs/DEPLOY.md); **CD**: green pushes to `main` deploy over SSH with a health check and automatic rollback |
+| Deployment | Done: live at https://desk.oreste.dev (staging) | `deploy/docker-compose.prod.yml` (Caddy automatic HTTPS, only 80/443 exposed, no demo users), `python -m app.cli create-admin`, secrets and DB management in [docs/DEPLOY.md](docs/DEPLOY.md); **CD**: green pushes to `main` deploy over SSH with a health check and automatic rollback |
 
 ## Architecture
 
