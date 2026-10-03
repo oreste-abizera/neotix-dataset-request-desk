@@ -17,7 +17,8 @@
       (function () {
         try {
           var s = localStorage.getItem("neotix.theme");
-          var dark = s === "dark" || (s !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+          var dark =
+            s === "dark" || (s !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
           if (dark) document.documentElement.classList.add("dark");
         } catch (e) {}
       })();
