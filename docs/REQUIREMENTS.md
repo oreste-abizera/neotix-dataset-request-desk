@@ -224,9 +224,9 @@ Run from a fresh `git clone` using only the README: `make up` -> stack healthy; 
 | R31 | Fresh-clone `make up` (and `docker compose up --build -d --wait`) |
 | R32 | `make test`, 214 tests |
 | R33 | `.github/workflows/ci.yml` (backend lint + tests, frontend build, compose smoke test); run is green on GitHub Actions |
-| R34 | Primary: SSE (`tests/test_events.py`; curl through nginx and through Caddy+nginx; browser shows live updates). Extra: background export (`tests/test_exports.py`, real-timing run: 10 episodes drained in 18 s with 2 retried failures). Extra, partial: deployment tooling verified locally over HTTPS (`docs/DEPLOY.md`); **not published, no URL** |
+| R34 | Primary: SSE (`tests/test_events.py`; curl through nginx and through Caddy+nginx; browser shows live updates). Extra: background export (`tests/test_exports.py`, real-timing run: 10 episodes drained in 18 s with 2 retried failures). Extra: deployed to https://desk.oreste.dev (staging, demo data), checked externally: valid Let's Encrypt certificate, HTTP/2, HSTS, HTTP to HTTPS redirect, docs hidden, protected routes 401 (`docs/DEPLOY.md`) |
 | R35-R40 | NOTES.md sections 1-6 |
 | R42-R44 | 9 incremental commits; scope kept to the brief; assumptions recorded |
 | R45 | README (run, test, credentials), NOTES, CI file |
 
-Gaps: R41 and R46 are the candidate's to do; no frontend automated tests; no screenshots in the README; no public deployment.
+Gaps: R41 and R46 are the candidate's to do; no frontend automated tests; no screenshots in the README; no frontend automated tests or screenshots.

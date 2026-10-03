@@ -1,6 +1,6 @@
 # Deployment (stretch item: public deployment with HTTPS)
 
-**Status, stated plainly:** the production stack below is built and was verified **locally** (HTTPS via Caddy's internal CA on `localhost`, HTTP/2, HSTS, `Secure` cookie, first admin by CLI, roles, SSE through both proxies, CSRF rejection, no demo users, API docs off). It has **not** been deployed to a public host from this repository, because that needs a server and a domain on your own account. **No public URL is claimed.** Let's Encrypt issuance is the one step I could not exercise locally.
+**Status:** deployed at **https://desk.oreste.dev** (one server, Docker Compose, `deploy/docker-compose.prod.yml`) as a staging environment with demo data (`SEED_DEMO_DATA=true`). Checked from outside: Let's Encrypt certificate, HTTP/2, HSTS, HTTP to HTTPS redirect, API docs hidden, protected routes return 401. Before the public deploy the same stack was verified locally (Caddy internal CA, `Secure` cookie, roles, SSE through both proxies, CSRF rejection). Lesson from the first deploy: the server already ran another web server on ports 80/443, so Caddy could not bind; stop or move whatever holds those ports first (`sudo ss -ltnp | grep -E ':(80|443)'`).
 
 ## What gets deployed
 

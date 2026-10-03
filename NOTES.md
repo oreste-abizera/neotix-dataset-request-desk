@@ -23,13 +23,13 @@ users ──< sessions                        robots (reference data)
 
 **Other assumptions** (full list in REQUIREMENTS.md §5): blank `operator_name` imports with a warning, any other blank field is rejected; `14/08/2026` is day-first and zone-less times are UTC; duration is whole seconds in 1..3600 (`45.5` is rejected, not rounded); future dates and unknown robots are rejected; clients get 404 (not 403) for others' requests; only clients create requests; analytics is staff-only with inclusive UTC days. On the supplied file 172 of 189 rows import, 17 are skipped with reasons, and a re-run imports 0.
 
-**Stretch items.** The one I chose is **real-time (SSE)**: operators see new requests and status, assignment and export changes live. Events carry ids only and the UI refetches through the normal authorised endpoints; the stream re-checks the session on every keep-alive, so a deactivated operator is cut off. I also built the **background export** (assignment enqueues one job per episode in the same transaction; workers claim with `FOR UPDATE SKIP LOCKED` under a lease; completion is fenced by attempt number; five attempts with backoff, then a manual retry; a succeeded export never runs twice). Both are beyond the "pick one" ask, kept small and tested. **Deployment** is prepared and verified locally (`deploy/`, `docs/DEPLOY.md`) but **not published**: there is no public URL.
+**Stretch items.** The one I chose is **real-time (SSE)**: operators see new requests and status, assignment and export changes live. Events carry ids only and the UI refetches through the normal authorised endpoints; the stream re-checks the session on every keep-alive, so a deactivated operator is cut off. I also built the **background export** (assignment enqueues one job per episode in the same transaction; workers claim with `FOR UPDATE SKIP LOCKED` under a lease; completion is fenced by attempt number; five attempts with backoff, then a manual retry; a succeeded export never runs twice). Both are beyond the "pick one" ask, kept small and tested. **Deployment** is live at https://desk.oreste.dev as a staging environment with demo data (`deploy/`, `docs/DEPLOY.md`): Caddy HTTPS, only 80/443 exposed, secrets only in a server-side env file, database in a private volume.
 
 ## 2. Left out, and the next two days
 
-Left out: password reset; editing/cancelling a request; correcting an existing episode; frontend automated tests (UI driven by hand in a browser); README screenshots; a public deployment (tooling exists, nothing is hosted).
+Left out: password reset; editing/cancelling a request; correcting an existing episode; frontend automated tests (UI driven by hand in a browser); README screenshots.
 
-With two more days: Playwright tests for the three roles; a reviewed "correct episode" flow with audit trail and an assignment-history view (stored, not shown); background CSV import with `COPY`; keyset pagination; actually hosting the `deploy/` stack; password reset and Redis-backed throttling.
+With two more days: Playwright tests for the three roles; a reviewed "correct episode" flow with audit trail and an assignment-history view (stored, not shown); background CSV import with `COPY`; keyset pagination; managed Postgres with off-site backups for the deployment; password reset and Redis-backed throttling.
 
 ## 3. Something that went wrong
 
