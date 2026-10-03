@@ -36,7 +36,7 @@ I will re-check exact pins at install time with `pip install` / `pip freeze` and
   - **JWT bearer:** stateless, but deactivating a user / changing a role would not take effect until expiry unless I add a DB check anyway (which cancels the benefit), and SSE (`EventSource`) cannot send an `Authorization` header.
   - **Opaque server-side session in an `HttpOnly; SameSite=Lax` cookie** (random 256-bit token, only its SHA-256 stored): revocation/deactivation is immediate, logout is real, JS can't read the token (XSS can't exfiltrate it), and `EventSource` works for the real-time stretch. Cost: one indexed lookup per request (I already load the user for RBAC) and CSRF must be handled.
 - CSRF handling: `SameSite=Lax`, JSON/multipart-only endpoints, plus an `Origin`-header check on unsafe methods; UI and API are same-origin behind the nginx proxy so no CORS is needed at all.
-- **Decision implied:** sessions-in-cookie, argon2 via pwdlib, no JWT dependency. This replaces the "leading candidate: JWT" in REQUIREMENTS A15.
+- **Decision implied:** sessions-in-cookie, argon2 via pwdlib, no JWT dependency. (Recorded in REQUIREMENTS A15.)
 
 ## 5. Sync vs async stack
 FastAPI works with plain `def` endpoints (run in a threadpool) and sync SQLAlchemy sessions. Async SQLAlchemy adds greenlet/lazy-load pitfalls and makes tests and live-coding harder, with no benefit for an internal tool. **Decision:** sync SQLAlchemy 2.x + psycopg3, `def` endpoints, a per-request session dependency. SSE (if built) is the one place needing `async`, kept isolated.
@@ -59,7 +59,7 @@ Sources: [Make your take-home stand out](https://eliya-b.medium.com/make-your-ta
 
 | # | Decision | Why |
 |---|---|---|
-| D1 | PostgreSQL 16+ (compose image `postgres:17`-class; pin the tag chosen), no SQLite path | `percentile_cont`, `ON CONFLICT`, row locks; avoids a "what would change in prod" caveat |
+| D1 | PostgreSQL 16 (`postgres:16-alpine`; the 17 image pull stalled, and 16 has every feature used), no SQLite path | `percentile_cont`, `ON CONFLICT`, row locks; avoids a "what would change in prod" caveat |
 | D2 | FastAPI + sync SQLAlchemy 2.1 + psycopg3 + Alembic; Pydantic v2 schemas | boring, widely known, easy to defend live |
 | D3 | Cookie sessions (opaque token, hashed at rest) + argon2 via pwdlib; origin check for CSRF; no JWT | instant revocation, SSE-compatible, XSS-safer; supersedes REQUIREMENTS A15 |
 | D4 | Concurrency invariants enforced in DB (`UNIQUE(assignments.episode_id)`, CHECKs) plus `FOR UPDATE` on the request row in the service layer | correctness under races, testable |

@@ -181,7 +181,7 @@ Items marked **[ASK]** could materially change the design. They were not sent as
 | A12 | Request fields: `deadline` type and validation; `episodes_requested` bounds; `notes` length. | `deadline` a date, must be today or later at creation; `episodes_requested` 1..100000; notes <= 2000 chars. Operator cannot edit request content. |
 | A13 | Analytics date-range semantics: filter on what? | (a),(c) by `recorded_at`; (b) by request `submitted_at` in range. Range inclusive-start, exclusive-end (`from`/`to` ISO dates), UTC day buckets. Median is time from the **first** `submitted` to the **first** `delivered` event; undelivered excluded; `null` if none. Ties in top-5 broken alphabetically. |
 | A14 | Who can call analytics? | operator + admin only (a client would otherwise see global data). |
-| A15 | Auth mechanism unspecified. | Decide in research (leading candidate: short-lived signed JWT in `Authorization: Bearer`, argon2/bcrypt hashes, user `is_active` re-checked on each request so deactivation is immediate). |
+| A15 | Auth mechanism unspecified. | **Resolved:** opaque server-side sessions in an HttpOnly cookie (not JWT) and argon2 hashes; role and `is_active` re-read on every request. See RESEARCH.md §4. |
 | A16 | Admin user-management UI required? Brief's UI section mentions only client + operator flows. | API fully implemented + tested; minimal UI only if time remains. |
 | A17 | Import via endpoint or CLI. Operators have the import permission, which implies an HTTP path. | Both, sharing one service: `POST /imports` (multipart, operator/admin) and `python -m app.cli import-episodes FILE`. Whole file processed in one transaction in batches; row-level rejects don't abort the file. Max upload size capped. |
 | A18 | Persist import reports? | Store an `import_runs` row (who, when, file hash, counts) and return the full per-row report in the response. |
@@ -203,7 +203,7 @@ Items marked **[ASK]** could materially change the design. They were not sent as
 
 ## 7. Verification (Phase 5)
 
-Run from a fresh `git clone` using only the README: `make up` -> stack healthy; all five documented logins return 200; 172 sample episodes seeded; `make venv && make test` -> **196 passed**; `make lint` -> ruff clean, frontend type-check clean. UI exercised by hand in a browser as operator and client (create, assign, blocked delivery, deliver, accept, audit history, live updates).
+Run from a fresh `git clone` using only the README: `make up` -> stack healthy; all five documented logins return 200; 172 sample episodes seeded; `make venv && make test` -> **199 passed**; `make lint` -> ruff clean, frontend type-check clean. UI exercised by hand in a browser as operator and client (create, assign, blocked delivery, deliver, accept, audit history, live updates).
 
 | Req | Evidence |
 |---|---|
@@ -222,7 +222,7 @@ Run from a fresh `git clone` using only the README: `make up` -> stack healthy; 
 | R26, R27 | `tests/test_operability.py`; JSON log lines visible in `docker compose logs api` |
 | R28-R30 | Manual browser run-through; frontend type-checks and builds in CI and `make lint` |
 | R31 | Fresh-clone `make up` (and `docker compose up --build -d --wait`) |
-| R32 | `make test`, 196 tests |
+| R32 | `make test`, 199 tests |
 | R33 | `.github/workflows/ci.yml` written; **not executed on GitHub from here** |
 | R34 | SSE: `tests/test_events.py` + curl through nginx showing an operator receiving `request.created` while a client gets 403 |
 | R35-R40 | NOTES.md sections 1-6 |

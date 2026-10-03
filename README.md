@@ -18,7 +18,7 @@ First build takes a couple of minutes. It starts Postgres, runs the migrations, 
 
 | What | Where |
 |---|---|
-| Web UI | http://localhost:8080 |
+| Web UI | http://localhost:8080 (set `WEB_PORT`, `API_PORT`, `DB_PORT` in `.env` if these ports are taken; see `.env.example`) |
 | API docs (development only) | http://localhost:8000/api/docs |
 | Health | http://localhost:8080/health |
 
@@ -44,12 +44,11 @@ Passwords are stored as Argon2id hashes. The seed refuses to run with `APP_ENV=p
 ## Run the tests
 
 ```bash
-make venv        # once: creates backend/.venv and installs pinned dev dependencies
-make test        # starts the Postgres container if needed, runs the whole suite
-make lint        # ruff (lint + format check) and the frontend type-check
+make test        # whole suite inside Docker against a real Postgres: nothing to install
+make test-local  # same tests with a local venv (needs Python 3.11+); also: make lint
 ```
 
-196 tests against a **real PostgreSQL** (a separate `neotix_test` database, migrated with Alembic). They concentrate on what the brief names:
+199 tests against a **real PostgreSQL** (a separate `neotix_test` database, migrated with Alembic). They concentrate on what the brief names:
 
 | Area | File | Examples |
 |---|---|---|
