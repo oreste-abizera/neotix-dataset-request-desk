@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session as DbSession
 
 from app.domain import ASSIGNABLE_QUALITIES, ASSIGNMENT_OPEN_STATUSES
 from app.errors import Conflict, NotFound
+from app.events import broker
 from app.models import Assignment, Episode, User
 from app.services.requests import get_visible_request
 
@@ -116,6 +117,7 @@ def assign_episodes(db: DbSession, actor: User, request_id: int, episode_ids: li
             "An episode was assigned by someone else at the same moment. Refresh and retry.",
             code="assignment_conflict",
         ) from None
+    broker.publish({"type": "request.assignments_changed", "request_id": request_id})
     return db.scalar(select(func.count()).where(Assignment.request_id == request_id)) or 0
 
 
@@ -135,3 +137,4 @@ def unassign_episode(db: DbSession, actor: User, request_id: int, episode_id: st
         db.rollback()
         raise NotFound("That episode is not assigned to this request.")
     db.commit()
+    broker.publish({"type": "request.assignments_changed", "request_id": request_id})

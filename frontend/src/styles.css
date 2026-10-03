@@ -42,3 +42,4 @@ dt { color: var(--muted); } dd { margin: 0; }
 ul.history { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
 ul.stats { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; }
 ul.stats b { font-size: 1.15rem; }
+.live { font-size: .8rem; } .live.on { color: #067647; } .live.off { color: var(--muted); }

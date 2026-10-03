@@ -8,6 +8,7 @@ import RequestDetail from "./RequestDetail";
 import RequestList from "./RequestList";
 import UsersPage from "./UsersPage";
 import type { User } from "./types";
+import { useLiveEvents } from "./useLiveEvents";
 
 function useHash(): string {
   const [hash, setHash] = useState(window.location.hash || "#/requests");
@@ -22,7 +23,8 @@ function useHash(): string {
 export default function App() {
   const [user, setUser] = useState<User | null | undefined>(undefined); // undefined = still checking
   const hash = useHash();
-  const refreshKey = 0;
+  const [refreshKey, setRefreshKey] = useState(0);
+  const live = useLiveEvents(!!user && user.role !== "client", () => setRefreshKey((k) => k + 1));
 
   useEffect(() => {
     api
@@ -64,6 +66,11 @@ export default function App() {
           {user.role === "admin" && <a href="#/users">Users</a>}
         </nav>
         <span className="spacer" />
+        {staff && (
+          <span className={`live ${live ? "on" : "off"}`} title="Live updates from the server">
+            {live ? "● Live" : "○ Offline"}
+          </span>
+        )}
         <span className="muted">
           {user.name} · {user.role}
         </span>

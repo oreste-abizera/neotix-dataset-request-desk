@@ -13,6 +13,7 @@ from app.domain import (
     SUBMITTED,
 )
 from app.errors import Conflict, Forbidden, NotFound
+from app.events import broker
 from app.models import Assignment, Request, StatusEvent, User
 from app.schemas import RequestCreate
 
@@ -82,6 +83,7 @@ def create_request(db: DbSession, client: User, data: RequestCreate) -> Request:
         )
     )
     db.commit()
+    broker.publish({"type": "request.created", "request_id": request.id, "status": SUBMITTED})
     return request
 
 
@@ -177,4 +179,5 @@ def transition(db: DbSession, actor: User, request_id: int, to: str) -> Request:
     )
     request.status = to
     db.commit()
+    broker.publish({"type": "request.status_changed", "request_id": request.id, "status": to})
     return request

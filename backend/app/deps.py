@@ -15,13 +15,12 @@ from app.security import hash_token
 Db = Annotated[DbSession, Depends(get_db)]
 
 
-def current_user(request: Request, db: Db) -> User:
-    """Resolve the cookie to an active user. The role is read from the DB on every request, so a
-    deactivation or role change takes effect immediately."""
-    token = request.cookies.get(settings.cookie_name)
+def user_for_token(db: DbSession, token: str | None) -> User | None:
+    """Resolve a raw session cookie to an active user, or None. The role is read from the DB on
+    every call, so a deactivation or role change takes effect immediately."""
     if not token:
-        raise Unauthorized("Authentication required.")
-    user = db.scalar(
+        return None
+    return db.scalar(
         select(User)
         .join(Session, Session.user_id == User.id)
         .where(
@@ -30,6 +29,10 @@ def current_user(request: Request, db: Db) -> User:
             User.is_active.is_(True),
         )
     )
+
+
+def current_user(request: Request, db: Db) -> User:
+    user = user_for_token(db, request.cookies.get(settings.cookie_name))
     if user is None:
         raise Unauthorized("Authentication required.")
     request.state.user_id = user.id

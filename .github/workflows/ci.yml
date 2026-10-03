@@ -1,0 +1,64 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: neotix
+          POSTGRES_PASSWORD: neotix_dev_password
+          POSTGRES_DB: neotix
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U neotix" --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      # The test suite creates and uses a separate "<db>_test" database next to this one.
+      DATABASE_URL: postgresql+psycopg://neotix:neotix_dev_password@localhost:5432/neotix
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  compose:
+    # Proves the documented one-command start works from a clean checkout.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose up --build -d --wait
+      - run: |
+          curl -fsS localhost:8080/health
+          curl -fsS -c jar -H 'content-type: application/json' \
+            -d '{"email":"admin@example.com","password":"admin123"}' localhost:8080/api/auth/login
+      - if: failure()
+        run: docker compose logs
