@@ -18,6 +18,7 @@ import { Alert, ErrorState } from "@/components/ui/states";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableScroll, Td, Th } from "@/components/ui/table";
 import { Tip } from "@/components/ui/tooltip";
+import { useFocusReturn } from "@/hooks/useFocusReturn";
 import { cn } from "@/lib/cn";
 import { ROLE_LABEL } from "@/lib/copy";
 
@@ -34,9 +35,11 @@ interface FormValues {
 function CreateUserDialog({
   open,
   onOpenChange,
+  onCloseAutoFocus,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  onCloseAutoFocus: (event: Event) => void;
 }) {
   const create = useCreateUser();
   const [show, setShow] = useState(false);
@@ -98,6 +101,7 @@ function CreateUserDialog({
       <DialogContent
         title="Create user"
         description="They can sign in right away with the password you set."
+        onCloseAutoFocus={onCloseAutoFocus}
       >
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
           {formError && <Alert>{formError}</Alert>}
@@ -238,15 +242,18 @@ function ActiveSwitch({
   me,
   scope,
   onToggle,
+  onOpener,
 }: {
   user: User;
   me: User;
   scope: string;
   onToggle: (next: boolean) => void;
+  onOpener: (event: { currentTarget: HTMLElement }) => void;
 }) {
   const self = user.id === me.id;
   const sw = (
     <Switch
+      onClick={onOpener}
       checked={user.is_active}
       disabled={self}
       aria-label={`${user.name} is ${user.is_active ? "active" : "deactivated"}`}
@@ -281,6 +288,8 @@ export default function UsersPage() {
   const update = useUpdateUser();
   const [createOpen, setCreateOpen] = useState(false);
   const [deactivating, setDeactivating] = useState<User | null>(null);
+  const deactivateFocus = useFocusReturn();
+  const createFocus = useFocusReturn();
 
   const changeRole = (u: User, role: Role) =>
     update.mutate(
@@ -308,7 +317,12 @@ export default function UsersPage() {
         title="Users"
         description="Create accounts and control who can do what. Changes take effect on the person's next action."
         actions={
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button
+            onClick={(e) => {
+              createFocus.remember(e);
+              setCreateOpen(true);
+            }}
+          >
             <UserPlus className="size-4" aria-hidden />
             Create user
           </Button>
@@ -377,6 +391,7 @@ export default function UsersPage() {
                             me={me}
                             scope="table"
                             onToggle={(n) => setActive(u, n)}
+                            onOpener={deactivateFocus.remember}
                           />
                         </Td>
                       </tr>
@@ -409,7 +424,13 @@ export default function UsersPage() {
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                   <RoleSelect user={u} me={me} scope="card" onChange={(r) => changeRole(u, r)} />
-                  <ActiveSwitch user={u} me={me} scope="card" onToggle={(n) => setActive(u, n)} />
+                  <ActiveSwitch
+                    user={u}
+                    me={me}
+                    scope="card"
+                    onToggle={(n) => setActive(u, n)}
+                    onOpener={deactivateFocus.remember}
+                  />
                 </div>
               </li>
             ))}
@@ -417,7 +438,11 @@ export default function UsersPage() {
         </>
       )}
 
-      <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateUserDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCloseAutoFocus={createFocus.onCloseAutoFocus}
+      />
       {deactivating && (
         <ConfirmDialog
           open
@@ -425,6 +450,7 @@ export default function UsersPage() {
           title={`Deactivate ${deactivating.name}?`}
           description="They are signed out immediately and cannot sign in until you reactivate them. Their requests and history are kept."
           confirmLabel="Deactivate"
+          onCloseAutoFocus={deactivateFocus.onCloseAutoFocus}
           tone="danger"
           onConfirm={() =>
             update.mutateAsync({ id: deactivating.id, patch: { is_active: false } }).then(() => {

@@ -34,6 +34,7 @@ import { Table, TableScroll, Td, Th } from "@/components/ui/table";
 import { cn } from "@/lib/cn";
 import { QUALITY_LABEL, STATUS_HINT, STATUS_LABEL, TRANSITION_COPY } from "@/lib/copy";
 import { dueIn, formatDate, formatDateTime, plural } from "@/lib/format";
+import { useFocusReturn } from "@/hooks/useFocusReturn";
 import AssignEpisodes from "@/features/assign/AssignEpisodes";
 
 function DetailSkeleton() {
@@ -147,6 +148,8 @@ export default function RequestDetailPage() {
   const retryExports = useRetryExports(id);
   const [pending, setPending] = useState<Status | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
+  const confirmFocus = useFocusReturn();
+  const assignFocus = useFocusReturn();
 
   if (q.isPending) return <DetailSkeleton />;
   if (q.isError) {
@@ -240,7 +243,10 @@ export default function RequestDetailPage() {
                 )}
                 loading={transition.isPending && transition.variables === to}
                 disabled={transition.isPending}
-                onClick={() => onTransition(to)}
+                onClick={(e) => {
+                  confirmFocus.remember(e);
+                  onTransition(to);
+                }}
               >
                 {TRANSITION_COPY[to].action}
               </Button>
@@ -272,7 +278,13 @@ export default function RequestDetailPage() {
               }
               actions={
                 staff && editable ? (
-                  <Button size="sm" onClick={() => setAssignOpen(true)}>
+                  <Button
+                    size="sm"
+                    onClick={(e) => {
+                      assignFocus.remember(e);
+                      setAssignOpen(true);
+                    }}
+                  >
                     <Plus className="size-4" aria-hidden />
                     Assign episodes
                   </Button>
@@ -315,7 +327,12 @@ export default function RequestDetailPage() {
                 }
                 action={
                   staff && editable ? (
-                    <Button onClick={() => setAssignOpen(true)}>
+                    <Button
+                      onClick={(e) => {
+                        assignFocus.remember(e);
+                        setAssignOpen(true);
+                      }}
+                    >
                       <Plus className="size-4" aria-hidden />
                       Assign episodes
                     </Button>
@@ -389,6 +406,7 @@ export default function RequestDetailPage() {
           confirmLabel={TRANSITION_COPY[pending].confirm}
           tone={TRANSITION_COPY[pending].tone}
           onConfirm={() => run(pending)}
+          onCloseAutoFocus={confirmFocus.onCloseAutoFocus}
         />
       )}
 
@@ -396,6 +414,7 @@ export default function RequestDetailPage() {
         <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
           <SheetContent
             flush
+            onCloseAutoFocus={assignFocus.onCloseAutoFocus}
             title="Assign episodes"
             description={`Request #${r.id}: ${r.task_name}. Only unassigned episodes are listed.`}
           >

@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { expectNoA11yViolations, expectUniqueIds } from "@/test/a11y";
@@ -264,6 +264,21 @@ describe("request detail", () => {
     );
     await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
     expect((await screen.findAllByText("Delivered")).length).toBeGreaterThan(0);
+  });
+
+  it("returns focus to the button that opened a dialog, even if the browser never focused it", async () => {
+    mockApi({
+      "GET /api/auth/me": ok(operator),
+      "GET /api/requests/1": ok(inProgress()),
+    });
+    renderApp("/requests/1");
+    const user = userEvent.setup();
+    const opener = await screen.findByRole("button", { name: "Mark delivered" });
+    fireEvent.click(opener); // like Safari: the click does not move focus onto the button
+    await screen.findByRole("alertdialog");
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
+    expect(opener).toHaveFocus();
   });
 
   it("keeps the dialog open and explains why when the server refuses", async () => {

@@ -38,16 +38,19 @@ export function DialogContent({
   description,
   children,
   className,
+  onCloseAutoFocus,
 }: {
   title: string;
   description?: string;
   children: ReactNode;
   className?: string;
+  onCloseAutoFocus?: (event: Event) => void;
 }) {
   return (
     <D.Portal>
       <D.Overlay className={overlay} />
       <D.Content
+        onCloseAutoFocus={onCloseAutoFocus}
         className={cn(
           "fixed top-1/2 left-1/2 z-50 flex max-h-[85dvh] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col",
           "rounded-xl border border-line bg-surface shadow-lg animate-pop-in",
@@ -72,6 +75,7 @@ export function SheetContent({
   side = "right",
   flush = false,
   className,
+  onCloseAutoFocus,
 }: {
   title: string;
   description?: string;
@@ -80,11 +84,13 @@ export function SheetContent({
   /** The children manage their own scrolling and padding (e.g. a list with a fixed footer). */
   flush?: boolean;
   className?: string;
+  onCloseAutoFocus?: (event: Event) => void;
 }) {
   return (
     <D.Portal>
       <D.Overlay className={overlay} />
       <D.Content
+        onCloseAutoFocus={onCloseAutoFocus}
         className={cn(
           "fixed z-50 flex flex-col border-line bg-surface shadow-lg",
           "inset-x-0 bottom-0 max-h-[90dvh] rounded-t-xl border-t animate-sheet-in",

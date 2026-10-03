@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tip, TooltipProvider } from "@/components/ui/tooltip";
+import { useFocusReturn } from "@/hooks/useFocusReturn";
 import { useHotkeys } from "@/hooks/useHotkeys";
 import { cn } from "@/lib/cn";
 import { ROLE_LABEL } from "@/lib/copy";
@@ -171,6 +172,7 @@ export default function AppShell({ user }: { user: User }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteLoaded, setPaletteLoaded] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const navFocus = useFocusReturn();
   useFocusHeadingOnNavigate();
 
   const openPalette = () => {
@@ -210,11 +212,18 @@ export default function AppShell({ user }: { user: User }) {
                 size="icon"
                 className="-ml-2 md:hidden"
                 aria-label="Open navigation"
-                onClick={() => setNavOpen(true)}
+                onClick={(e) => {
+                  navFocus.remember(e);
+                  setNavOpen(true);
+                }}
               >
                 <Menu className="size-5" aria-hidden />
               </Button>
-              <SheetContent title="Navigation" side="left">
+              <SheetContent
+                title="Navigation"
+                side="left"
+                onCloseAutoFocus={navFocus.onCloseAutoFocus}
+              >
                 <nav aria-label="Main" className="flex flex-col gap-1">
                   {items.map((n) => (
                     <NavLink

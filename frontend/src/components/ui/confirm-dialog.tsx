@@ -12,6 +12,8 @@ interface Props {
   tone?: "primary" | "danger";
   /** Resolve to close the dialog; reject to keep it open and show the error inside it. */
   onConfirm: () => Promise<unknown>;
+  /** From useFocusReturn(): puts focus back on the control that opened the dialog. */
+  onCloseAutoFocus?: (event: Event) => void;
 }
 
 /** Confirmation for consequential actions. Replaces window.confirm: themed, focus-managed, async. */
@@ -23,6 +25,7 @@ export function ConfirmDialog({
   confirmLabel,
   tone = "primary",
   onConfirm,
+  onCloseAutoFocus,
 }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +53,10 @@ export function ConfirmDialog({
     <AlertDialog.Root open={open} onOpenChange={close}>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] animate-fade-in" />
-        <AlertDialog.Content className="fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-surface p-5 shadow-lg animate-pop-in">
+        <AlertDialog.Content
+          onCloseAutoFocus={onCloseAutoFocus}
+          className="fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line bg-surface p-5 shadow-lg animate-pop-in"
+        >
           <AlertDialog.Title className="text-md font-semibold">{title}</AlertDialog.Title>
           <AlertDialog.Description className="mt-2 text-muted-foreground">
             {description}
