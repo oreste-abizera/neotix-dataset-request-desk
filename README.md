@@ -73,6 +73,15 @@ CI (`.github/workflows/ci.yml`): backend lint + tests with a Postgres service, f
 | Background work | Done (extra) | On assignment each episode gets an export job (sleep 2-5 s, fails 20%). Postgres-backed queue (`FOR UPDATE SKIP LOCKED`), idempotent enqueue (PK = episode id), leases so a dead worker's job is taken over, completion fenced by attempt number, up to 5 attempts with backoff, manual "Retry failed exports", per-episode status in the operator UI (live). `app/services/exports.py`, `app/worker.py`, `tests/test_exports.py` |
 | Deployment | Done: live at https://desk.oreste.dev (staging) | `deploy/docker-compose.prod.yml` (Caddy automatic HTTPS, only 80/443 exposed; demo users only when `SEED_DEMO_DATA=true`, as on staging), `python -m app.cli create-admin`, secrets and DB management in [docs/DEPLOY.md](docs/DEPLOY.md); **CD**: a green push to `main` deploys to the server over SSH, checks `/health` and rolls back automatically on failure (verified on the live server) |
 
+## Frontend
+
+React 19 + TypeScript (strict) + Vite, Tailwind CSS 4 with a token-based design system (light and dark), Radix primitives for dialogs and menus, TanStack Query for server state, React Router, React Hook Form. Highlights: queue as table on desktop and cards on phones, request page with status timeline and confirmation dialogs, assign-episodes sheet, live updates over SSE, import report with downloadable skipped rows, accessible analytics chart, command menu (`Ctrl/⌘ K`) and shortcuts (`?`). WCAG 2.2 AA verified with axe and Lighthouse (accessibility 100); entry bundle 76 kB gzip, pages lazy-loaded. Research, decisions, measurements and the list of defects found along the way are in [docs/frontend-research.md](docs/frontend-research.md) and [docs/frontend-upgrade-plan.md](docs/frontend-upgrade-plan.md).
+
+```bash
+make test-web    # 67 unit, flow and accessibility tests (Node 22)
+make lint        # also runs ESLint (incl. jsx-a11y), Prettier check and the type-check for the frontend
+```
+
 ## Architecture
 
 ```

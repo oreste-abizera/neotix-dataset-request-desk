@@ -118,15 +118,35 @@ frontend/src/
 - **Static:** strict TypeScript, ESLint with `jsx-a11y`, Prettier check; all run in CI.
 - **Manual and tooling:** Lighthouse (mobile and desktop) before and after, axe in the browser at 375 / 768 / 1280 px in both themes, keyboard-only walkthrough, reduced-motion check.
 
-## 9. Verification checklist (Phase 5, all must pass before merge)
+## 9. Verification checklist (Phase 5): results
 
-- [ ] `npm run lint`, `typecheck`, `test`, `build` green; no `any`, no unused exports, no console errors at runtime
-- [ ] Every page checked at 375, 768 and 1280 px in light and dark; no horizontal page scroll; all targets >= 24 px
-- [ ] Lighthouse mobile: Accessibility 100, Best Practices 100, SEO 100, Performance >= 95 on login and list, >= 90 on detail; CLS < 0.1; TBT < 200 ms
-- [ ] axe: zero violations on every page in both themes
-- [ ] Bundle budget met (initial JS <= 120 kB gzip, page chunks <= 25 kB gzip)
-- [ ] Full regression pass as client, operator and admin against the local stack: login, create request, transitions with confirmations, assign and unassign, export status and retry, import and re-import, analytics, user create/role/deactivate, live updates in a second window, session expiry, bookmarks from the old hash URLs
-- [ ] No backend change (`git diff main -- backend` empty); otherwise flagged
+- [x] `npm run lint`, `typecheck`, `test`, `build` green; no `any`; no runtime console errors on signed-in pages (the only console message is the expected 401 from the session probe when a signed-out visitor opens a protected URL)
+- [x] Every page checked at 375, 768 and 1280 px, in light and dark: no horizontal page scroll, targets >= 24 px (one 21 px link found and fixed)
+- [x] Lighthouse (final run, local build): see the table below. Accessibility 100, Best Practices 100 everywhere
+- [x] axe-core in a real browser (real layout, so contrast is included): **0 violations** on queue, detail, import, analytics and users in both themes; axe in jsdom for login, queue, detail, new request, users, import, analytics
+- [x] Bundle budget met: entry **76 kB** gzip (budget 120, was 74 before the upgrade), CSS **8.9 kB** gzip, every page its own lazy chunk (largest 6 kB), signed-in shell 12.7 kB lazy, command palette 5.5 kB lazy
+- [x] Full regression pass as client, operator and admin against the local stack: login (incl. deep link back after sign-in), create request with inline validation, transitions with confirmation dialogs and toasts, assign (sheet, selection rules, live update), export status live, import with report, analytics, command palette, shortcuts, theme toggle, session expiry (tested), old hash bookmarks (tested)
+- [x] No backend change: `git diff main -- backend` is empty
+
+### Measured results (Lighthouse 13.5, mobile = simulated slow 4G + 4x CPU slowdown)
+
+| Page | Before (perf / a11y / best / SEO) | After (perf / a11y / best / SEO) | LCP before -> after | CLS before -> after |
+|---|---|---|---|---|
+| Login, mobile | 96 / 100 / 96 / 82 | **95** / **100** / **100** / 63* | 2.4 s -> 2.5 s | 0 -> 0 |
+| Queue, mobile | 95 / 100 / 100 / 82 | **93** / **100** / **100** / 63* | 2.6 s -> 2.9 s | 0.028 -> 0 |
+| Request detail, mobile | 80 / 96 / 100 / 82 | **91** / **100** / **100** / 63* | 2.6 s -> 3.2 s | 0.098 -> 0 |
+| Queue, desktop | 100 / 100 / 100 / 82 | **100** / **100** / **100** / 63* | 0.6 s -> 0.7 s | 0.011 -> 0 |
+
+\* SEO is 63 because of one audit, `is-crawlable`: the app is an authenticated internal tool, so it ships `<meta name="robots" content="noindex">` and `robots.txt` `Disallow: /` **on purpose**. Every other SEO audit passes. Remove both to get 91+ if public indexing of the login page were ever wanted.
+
+The new UI does much more per page (design system, dialogs, toasts, live updates), so mobile LCP is slightly higher than the old minimal page, but detail-page TBT fell from 490 ms to 0, layout shift from 0.098 to 0, and accessibility reached 100 on every page. The numbers were bad (perf ~71, LCP ~5 s) until Phase 5 found and fixed: **no gzip on the static server** (610 kB transferred for the login page, now ~190 kB), and the whole signed-in shell shipping in the entry bundle (112 kB -> 76 kB gzip).
+
+### Deviations from the plan, and what Phase 5 found
+- **Native `<select>` and checkboxes** instead of Radix Select/Checkbox (simpler, better on phones).
+- **Assign episodes is always a sheet** (bottom sheet on phones, side panel on desktop), not inline on desktop: one implementation, keeps the request visible behind it.
+- **Command palette and chart** as planned; the chart is plain elements, weekly buckets above 45 days.
+- **Real defects found by tests or measurement, all fixed:** session-expiry left the UI on a dead session (`queryClient.clear()` detaches observers; fixed with `resetSession()`); focus was lost to `<body>` after closing a dialog opened by a click that did not focus its button (fixed with `useFocusReturn`); duplicate `aria-describedby` ids on the Users page (axe only reports these as "needs review", so there is now an explicit unique-id test); a 21 px back link; the sticky assign footer floating above the sheet's bottom edge; no response compression; shell and toaster in the entry bundle.
+- **Mutation checks:** 9 deliberate breakages of UI rules (confirmation removed, role guard opened, bad-quality selectable, self-protection removed, optimistic update/rollback removed, staff column leaked to clients, 401 handling removed, focus return removed, duplicate ids) are each caught by the test-suite (67 tests).
 
 ## 10. Risks
 

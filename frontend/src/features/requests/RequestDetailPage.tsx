@@ -277,7 +277,7 @@ export default function RequestDetailPage() {
                   : undefined
               }
               actions={
-                staff && editable ? (
+                staff && editable && r.episodes.length > 0 ? (
                   <Button
                     size="sm"
                     onClick={(e) => {
