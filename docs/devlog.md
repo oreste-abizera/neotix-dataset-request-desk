@@ -26,3 +26,9 @@
   `queryClient.clear()` detaches live observers, so the following `setQueryData(me, null)` updated a query nobody was
   watching. A real bug in my first draft of the new data layer, found by the test, not by manual use. Fixed with one
   `resetSession()` helper that removes every query except "who am I" and then sets it.
+- Screenshots for the README were captured with puppeteer-core driving Chrome with real mobile emulation. They exposed a
+  mobile layout bug my earlier checks missed: the browser pane's "mobile" viewport had silently reset to 656 px, so
+  nothing at 390 px had really been measured. Two causes (grid column min-width; an `sr-only` span positioned against
+  the page inside a scroll container). A pixel-level overflow check across every page now reports 0.
+- A scripted edit that moved an `eslint-disable-next-line` comment turned a clean lint into an error; running only
+  `eslint | tail` hid it. Lesson: look at the exit status, not the tail of the output.
