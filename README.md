@@ -28,10 +28,10 @@ Stop with `make down`; wipe all data with `make reset`. Without `make`, use the 
 
 | Role | Email | Password |
 |---|---|---|
-| admin | `admin@example.com` | `admin123` |
-| operator | `ops1@example.com`, `ops2@example.com` | `ops123` |
-| client | `client-a@example.com` (Acme Robotics) | `client123` |
-| client | `client-b@example.com` (Beta Labs) | `client123` |
+| admin | `admin@oreste.dev` | `admin123` |
+| operator | `ops1@oreste.dev`, `ops2@oreste.dev` | `ops123` |
+| client | `client-a@oreste.dev` (Acme Robotics) | `client123` |
+| client | `client-b@oreste.dev` (Beta Labs) | `client123` |
 
 Passwords are stored as Argon2id hashes. The seed refuses to run with `APP_ENV=production`.
 

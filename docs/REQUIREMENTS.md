@@ -110,7 +110,7 @@ Expected on first import (to be verified by test): 189 data lines, minus 2 blank
 
 Generator file: IDs `EP-100000+`, 7 task names, 6 operator names, 5 robots, quality mix 60/30/10 good/usable/bad, dates 2025-09 to 2026-09. Use for 200k-row import and analytics timing evidence.
 
-Seed users (S-README): `admin@example.com/admin123`, `ops1@example.com` & `ops2@example.com` /`ops123`, `client-a@example.com` & `client-b@example.com` /`client123`. Weak, dev-only; must be documented as such.
+Seed users (S-README): `admin@oreste.dev/admin123`, `ops1@oreste.dev` & `ops2@oreste.dev` /`ops123`, `client-a@oreste.dev` & `client-b@oreste.dev` /`client123`. Weak, dev-only; must be documented as such.
 
 ---
 

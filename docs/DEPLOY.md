@@ -37,11 +37,11 @@ Internet ─:443─► Caddy (automatic HTTPS, HSTS) ─► nginx (static UI, /a
 
 ## Steps on a fresh server (any VPS or free-tier VM with Docker)
 
-1. Point a DNS A/AAAA record (e.g. `desk.example.com`) at the server; open ports 80 and 443.
+1. Point a DNS A/AAAA record (e.g. `desk.oreste.dev`) at the server; open ports 80 and 443.
 2. `git clone <repo> && cd <repo> && cp deploy/.env.prod.example deploy/.env.prod` and set `SITE_ADDRESS` and `POSTGRES_PASSWORD`.
 3. `docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.prod up -d --build --wait`
 4. Create the first administrator, then create operators and clients from the **Users** page:
-   `docker compose -f deploy/docker-compose.prod.yml exec -e ADMIN_PASSWORD='…' api python -m app.cli create-admin --email you@example.com --name "Your Name"`
+   `docker compose -f deploy/docker-compose.prod.yml exec -e ADMIN_PASSWORD='…' api python -m app.cli create-admin --email you@oreste.dev --name "Your Name"`
 5. Check `https://<your-domain>/health`. Caddy obtains and renews the certificate itself; keep the `caddy_data` volume.
 6. Update: `git pull && docker compose … up -d --build`.
 

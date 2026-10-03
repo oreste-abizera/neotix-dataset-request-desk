@@ -79,22 +79,22 @@ def _make_user(db, email: str, role: str, name: str | None = None, org: str | No
 
 @pytest.fixture
 def admin(db) -> User:
-    return _make_user(db, "admin@example.com", "admin")
+    return _make_user(db, "admin@oreste.dev", "admin")
 
 
 @pytest.fixture
 def operator(db) -> User:
-    return _make_user(db, "op@example.com", "operator")
+    return _make_user(db, "op@oreste.dev", "operator")
 
 
 @pytest.fixture
 def client_a(db) -> User:
-    return _make_user(db, "a@example.com", "client", org="Acme")
+    return _make_user(db, "a@oreste.dev", "client", org="Acme")
 
 
 @pytest.fixture
 def client_b(db) -> User:
-    return _make_user(db, "b@example.com", "client", org="Beta")
+    return _make_user(db, "b@oreste.dev", "client", org="Beta")
 
 
 def api_client(user: User | None = None) -> TestClient:

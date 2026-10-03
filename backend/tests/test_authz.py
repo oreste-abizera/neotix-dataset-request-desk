@@ -55,7 +55,7 @@ def test_clients_cannot_import(as_a):
 def test_only_admin_manages_users(request, who):
     c = request.getfixturevalue(who)
     assert c.get("/api/users").status_code == 403
-    body = {"email": "x@example.com", "name": "X", "role": "admin", "password": "longenough1"}
+    body = {"email": "x@oreste.dev", "name": "X", "role": "admin", "password": "longenough1"}
     assert c.post("/api/users", json=body).status_code == 403
     assert c.patch("/api/users/1", json={"role": "admin"}).status_code == 403
 
@@ -105,16 +105,16 @@ def test_admin_cannot_demote_or_deactivate_self(admin, as_admin):
 
 def test_admin_can_create_user_who_can_log_in(as_admin):
     body = {
-        "email": "New@Example.com",
+        "email": "New@oreste.dev",
         "name": "New",
         "role": "operator",
         "password": "longenough1",
     }
     r = as_admin.post("/api/users", json=body)
     assert r.status_code == 201
-    assert r.json()["email"] == "new@example.com"
+    assert r.json()["email"] == "new@oreste.dev"
     ok = api_client().post(
-        "/api/auth/login", json={"email": "new@example.com", "password": "longenough1"}
+        "/api/auth/login", json={"email": "new@oreste.dev", "password": "longenough1"}
     )
     assert ok.status_code == 200
     dup = as_admin.post("/api/users", json=body)
@@ -123,7 +123,7 @@ def test_admin_can_create_user_who_can_log_in(as_admin):
 
 def test_login_failures_are_indistinguishable(operator, anon):
     wrong_pw = anon.post("/api/auth/login", json={"email": operator.email, "password": "nope"})
-    no_user = anon.post("/api/auth/login", json={"email": "ghost@example.com", "password": "nope"})
+    no_user = anon.post("/api/auth/login", json={"email": "ghost@oreste.dev", "password": "nope"})
     assert wrong_pw.status_code == no_user.status_code == 401
     assert wrong_pw.json() == no_user.json()
 

@@ -45,11 +45,11 @@ def test_create_admin_bootstraps_a_working_admin_and_rejects_weak_or_duplicate(d
     import pytest
 
     with pytest.raises(SystemExit, match="at least 12"):
-        cli.create_admin("root@example.com", "Root", "short")
-    cli.create_admin("Root@Example.com", "Root", "a-long-enough-password")
+        cli.create_admin("root@oreste.dev", "Root", "short")
+    cli.create_admin("Root@oreste.dev", "Root", "a-long-enough-password")
     r = api_client().post(
-        "/api/auth/login", json={"email": "root@example.com", "password": "a-long-enough-password"}
+        "/api/auth/login", json={"email": "root@oreste.dev", "password": "a-long-enough-password"}
     )
     assert r.status_code == 200 and r.json()["role"] == "admin"
     with pytest.raises(SystemExit, match="already exists"):
-        cli.create_admin("root@example.com", "Root", "a-long-enough-password")
+        cli.create_admin("root@oreste.dev", "Root", "a-long-enough-password")
