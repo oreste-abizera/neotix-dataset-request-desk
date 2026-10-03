@@ -32,6 +32,10 @@ services:
       DATABASE_URL: postgresql+psycopg://neotix:${POSTGRES_PASSWORD}@db:5432/neotix
       APP_ENV: production          # Secure cookies, API docs off, demo seed refused
       RUN_WORKER: "true"
+      # Staging only: set SEED_DEMO_DATA=true in deploy/.env.prod to create the documented demo users
+      # and sample episodes (idempotent, never touches existing accounts). Leave off for real use.
+      SEED_FORCE: ${SEED_DEMO_DATA:-false}
+      SEED_SAMPLE_EPISODES: ${SEED_DEMO_DATA:-false}
     depends_on:
       db:
         condition: service_healthy

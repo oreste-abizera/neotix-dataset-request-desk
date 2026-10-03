@@ -16,8 +16,8 @@ log = logging.getLogger("app.cli")
 
 
 def seed(force: bool = False) -> None:
-    if settings.app_env == "production" and not force:
-        log.warning("Refusing to seed demo users in production (use --force to override).")
+    if settings.app_env == "production" and not (force or settings.seed_force):
+        log.warning("Refusing to seed demo users in production (use --force or SEED_FORCE=true).")
         return
     with SessionLocal() as db:
         created = users.seed_users(db, settings.seed_dir / "users.json")

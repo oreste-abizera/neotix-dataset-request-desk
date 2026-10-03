@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 50 * 1024 * 1024
     seed_dir: Path = REPO_ROOT / "seed"
     seed_sample_episodes: bool = False
+    # Staging servers run with APP_ENV=production but may still want the demo users.
+    seed_force: bool = False
     # Cookie is only marked Secure outside development (dev runs on plain http).
     cookie_name: str = "neotix_session"
 

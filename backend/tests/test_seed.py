@@ -53,3 +53,12 @@ def test_create_admin_bootstraps_a_working_admin_and_rejects_weak_or_duplicate(d
     assert r.status_code == 200 and r.json()["role"] == "admin"
     with pytest.raises(SystemExit, match="already exists"):
         cli.create_admin("root@oreste.dev", "Root", "a-long-enough-password")
+
+
+def test_seed_force_setting_allows_demo_users_on_a_production_staging_server(db, monkeypatch):
+    monkeypatch.setattr(settings, "app_env", "production")
+    monkeypatch.setattr(settings, "seed_force", True)
+    monkeypatch.setattr(settings, "seed_sample_episodes", True)
+    cli.seed()
+    assert db.scalar(select(func.count()).select_from(User)) == 5
+    assert db.scalar(select(func.count()).select_from(Episode)) == 172
