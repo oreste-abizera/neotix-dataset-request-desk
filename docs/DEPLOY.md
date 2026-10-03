@@ -51,7 +51,7 @@ Production refuses to seed demo users. For a staging/demo server, add `SEED_DEMO
 
 ## Continuous deployment (GitHub Actions)
 
-Every push to `main` runs the CI jobs; if all pass, the `deploy` job (in `.github/workflows/ci.yml`) SSHes into the server and runs `deploy/deploy.sh <sha>`, which checks out that commit, rebuilds, waits for `/health` through Caddy, and **rolls back to the previous commit if the new one does not become healthy** (the job then fails, and the old version keeps serving). A final step smoke-tests the public URL. The job is skipped unless the repository variable `DEPLOY_HOST` exists, so forks and fresh clones are unaffected. Rollback and failure paths were rehearsed locally against the production compose file; the SSH leg itself can only be exercised on your server.
+Every push to `main` runs the CI jobs; if all pass, the `deploy` job (in `.github/workflows/ci.yml`) SSHes into the server and runs `deploy/deploy.sh <sha>`, which checks out that commit, rebuilds, waits for `/health` through Caddy, and **rolls back to the previous commit if the new one does not become healthy** (the job then fails, and the old version keeps serving). A final step smoke-tests the public URL. The job is skipped unless the repository variable `DEPLOY_HOST` exists, so forks and fresh clones are unaffected. The rollback and failure paths were rehearsed locally against the production compose file, and a real push to `main` has been deployed to https://desk.oreste.dev through this job (server checkout moved to the pushed commit, health check and smoke test green).
 
 **One-time setup**
 
