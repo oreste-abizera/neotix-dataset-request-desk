@@ -1,0 +1,285 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter/wght.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------------------------------
+   Design tokens. Components only ever use the semantic names below (bg-surface, text-muted, ...),
+   never raw colors, so a theme is just a different set of values. Contrast of every text/background
+   pair is verified by src/styles/tokens.test.ts.
+   ------------------------------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --border: #e2e8f0;
+  --border-input: #64748b;
+  --foreground: #0f172a;
+  --muted-foreground: #475569;
+  --primary: #4338ca;
+  --primary-hover: #3730a3;
+  --primary-foreground: #ffffff;
+  --primary-soft: #eef2ff;
+  --ring: #4f46e5;
+  --danger: #b91c1c;
+  --danger-soft: #fef2f2;
+  --danger-foreground: #ffffff;
+  --success: #15803d;
+  --success-soft: #f0fdf4;
+  --warning: #b45309;
+  --warning-soft: #fffbeb;
+  --info: #0369a1;
+  --info-soft: #f0f9ff;
+
+  --status-submitted-bg: #e0e7ff;
+  --status-submitted-fg: #3730a3;
+  --status-in_progress-bg: #fef3c7;
+  --status-in_progress-fg: #92400e;
+  --status-delivered-bg: #cffafe;
+  --status-delivered-fg: #155e75;
+  --status-accepted-bg: #dcfce7;
+  --status-accepted-fg: #166534;
+  --status-rejected-bg: #fee2e2;
+  --status-rejected-fg: #991b1b;
+  --status-neutral-bg: #e2e8f0;
+  --status-neutral-fg: #334155;
+
+  --chart-1: #4338ca;
+  --chart-2: #0e7490;
+  --chart-3: #b45309;
+  --chart-4: #15803d;
+  --chart-5: #a21caf;
+
+  --shadow-xs: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-sm: 0 1px 3px rgb(15 23 42 / 0.1), 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-md: 0 8px 24px rgb(15 23 42 / 0.12);
+  --shadow-lg: 0 20px 48px rgb(15 23 42 / 0.2);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0b1120;
+  --surface: #111a2e;
+  --surface-muted: #1a2438;
+  --border: #243049;
+  --border-input: #6b7a99;
+  --foreground: #e6ebf5;
+  --muted-foreground: #9aa8c2;
+  --primary: #7c83f5;
+  --primary-hover: #9199f8;
+  --primary-foreground: #0b1120;
+  --primary-soft: #1d2149;
+  --ring: #a5b4fc;
+  --danger: #f87171;
+  --danger-soft: #3b1416;
+  --danger-foreground: #0b1120;
+  --success: #4ade80;
+  --success-soft: #0f2e1c;
+  --warning: #fbbf24;
+  --warning-soft: #33250a;
+  --info: #7dd3fc;
+  --info-soft: #0c2a3d;
+
+  --status-submitted-bg: #25295a;
+  --status-submitted-fg: #c7d2fe;
+  --status-in_progress-bg: #3b2a0a;
+  --status-in_progress-fg: #fcd34d;
+  --status-delivered-bg: #0b3340;
+  --status-delivered-fg: #67e8f9;
+  --status-accepted-bg: #0f3322;
+  --status-accepted-fg: #86efac;
+  --status-rejected-bg: #3f1414;
+  --status-rejected-fg: #fca5a5;
+  --status-neutral-bg: #243049;
+  --status-neutral-fg: #cbd5e1;
+
+  --chart-1: #818cf8;
+  --chart-2: #22d3ee;
+  --chart-3: #fbbf24;
+  --chart-4: #4ade80;
+  --chart-5: #e879f9;
+
+  --shadow-xs: none;
+  --shadow-sm: 0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 20px 48px rgb(0 0 0 / 0.6);
+}
+
+@theme inline {
+  --font-sans:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-muted: var(--surface-muted);
+  --color-line: var(--border);
+  --color-input-line: var(--border-input);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-ring: var(--ring);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --color-status-submitted: var(--status-submitted-bg);
+  --color-status-submitted-fg: var(--status-submitted-fg);
+  --color-status-in_progress: var(--status-in_progress-bg);
+  --color-status-in_progress-fg: var(--status-in_progress-fg);
+  --color-status-delivered: var(--status-delivered-bg);
+  --color-status-delivered-fg: var(--status-delivered-fg);
+  --color-status-accepted: var(--status-accepted-bg);
+  --color-status-accepted-fg: var(--status-accepted-fg);
+  --color-status-rejected: var(--status-rejected-bg);
+  --color-status-rejected-fg: var(--status-rejected-fg);
+  --color-status-neutral: var(--status-neutral-bg);
+  --color-status-neutral-fg: var(--status-neutral-fg);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-fade-in: fade-in 180ms var(--ease-out-soft);
+  --animate-pop-in: pop-in 180ms var(--ease-out-soft);
+  --animate-sheet-in: sheet-in 260ms var(--ease-out-soft);
+  --animate-toast-in: fade-in 180ms var(--ease-out-soft);
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97) translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: none;
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    /* The sticky header is 56px: keep focused elements from hiding behind it (WCAG 2.4.11). */
+    scroll-padding-top: 5rem;
+  }
+  body {
+    @apply bg-background text-foreground text-base antialiased;
+    font-feature-settings:
+      "cv11" 1,
+      "ss01" 1;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-semibold tracking-tight;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 25%, transparent);
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      var(--surface-muted) 25%,
+      color-mix(in srgb, var(--surface-muted) 55%, var(--surface)) 50%,
+      var(--surface-muted) 75%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer rounded-md;
+  }
+}
+
+/* Respect users who ask for less motion: no shimmer, no pulsing, transitions become instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
