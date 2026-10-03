@@ -20,6 +20,7 @@ def make_timed_request(
         deadline=date(2099, 1, 1),
         notes="",
         status="submitted",
+        created_at=submitted,
     )
     db.add(req)
     db.flush()

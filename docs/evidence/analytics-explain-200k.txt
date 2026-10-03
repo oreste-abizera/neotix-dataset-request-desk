@@ -1,0 +1,123 @@
+Timing is off.
+INSERT 0 1
+INSERT 0 5000
+INSERT 0 5000
+INSERT 0 3000
+ANALYZE
+=== (a) episodes per day per robot, 30-day range ===
+                                                                                  QUERY PLAN                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate (actual time=11.095..13.518 rows=155 loops=1)
+   Group Key: (date(timezone('UTC'::text, recorded_at))), robot_id
+   Buffers: shared hit=2583
+   ->  Sort (actual time=11.074..11.999 rows=16925 loops=1)
+         Sort Key: (date(timezone('UTC'::text, recorded_at))), robot_id
+         Sort Method: quicksort  Memory: 1430kB
+         Buffers: shared hit=2583
+         ->  Bitmap Heap Scan on episodes (actual time=1.467..6.688 rows=16925 loops=1)
+               Recheck Cond: ((recorded_at >= '2026-03-01 00:00:00+00'::timestamp with time zone) AND (recorded_at < '2026-04-01 00:00:00+00'::timestamp with time zone))
+               Heap Blocks: exact=2529
+               Buffers: shared hit=2583
+               ->  Bitmap Index Scan on ix_episodes_recorded_at (actual time=1.176..1.177 rows=16925 loops=1)
+                     Index Cond: ((recorded_at >= '2026-03-01 00:00:00+00'::timestamp with time zone) AND (recorded_at < '2026-04-01 00:00:00+00'::timestamp with time zone))
+                     Buffers: shared hit=54
+ Planning:
+   Buffers: shared hit=39
+ Planning Time: 0.210 ms
+ Execution Time: 13.605 ms
+(18 rows)
+
+=== (a) same, full-year range ===
+                                                                             QUERY PLAN                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate (actual time=99.280..143.150 rows=1865 loops=1)
+   Group Key: (date(timezone('UTC'::text, recorded_at))), robot_id
+   Buffers: shared hit=2533, temp read=555 written=558
+   ->  Sort (actual time=99.255..123.444 rows=200172 loops=1)
+         Sort Key: (date(timezone('UTC'::text, recorded_at))), robot_id
+         Sort Method: external merge  Disk: 4440kB
+         Buffers: shared hit=2533, temp read=555 written=558
+         ->  Seq Scan on episodes (actual time=0.006..38.065 rows=200172 loops=1)
+               Filter: ((recorded_at >= '2025-09-01 00:00:00+00'::timestamp with time zone) AND (recorded_at < '2026-10-01 00:00:00+00'::timestamp with time zone))
+               Buffers: shared hit=2533
+ Planning:
+   Buffers: shared hit=8
+ Planning Time: 0.099 ms
+ Execution Time: 143.530 ms
+(14 rows)
+
+=== (c) top 5 tasks by good episodes, full range ===
+                                                                                                           QUERY PLAN                                                                                                            
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit (actual time=23.259..25.234 rows=5 loops=1)
+   Buffers: shared hit=2541
+   ->  Sort (actual time=23.258..25.232 rows=5 loops=1)
+         Sort Key: (count(*)) DESC, task_name
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=2541
+         ->  Finalize GroupAggregate (actual time=23.242..25.219 rows=8 loops=1)
+               Group Key: task_name
+               Buffers: shared hit=2541
+               ->  Gather Merge (actual time=23.237..25.213 rows=15 loops=1)
+                     Workers Planned: 1
+                     Workers Launched: 1
+                     Buffers: shared hit=2541
+                     ->  Sort (actual time=19.916..19.917 rows=8 loops=2)
+                           Sort Key: task_name
+                           Sort Method: quicksort  Memory: 25kB
+                           Buffers: shared hit=2541
+                           Worker 0:  Sort Method: quicksort  Memory: 25kB
+                           ->  Partial HashAggregate (actual time=19.872..19.874 rows=8 loops=2)
+                                 Group Key: task_name
+                                 Batches: 1  Memory Usage: 24kB
+                                 Buffers: shared hit=2533
+                                 Worker 0:  Batches: 1  Memory Usage: 24kB
+                                 ->  Parallel Seq Scan on episodes (actual time=0.008..11.968 rows=60057 loops=2)
+                                       Filter: ((recorded_at >= '2025-09-01 00:00:00+00'::timestamp with time zone) AND (recorded_at < '2026-10-01 00:00:00+00'::timestamp with time zone) AND ((quality)::text = 'good'::text))
+                                       Rows Removed by Filter: 40029
+                                       Buffers: shared hit=2533
+ Planning:
+   Buffers: shared hit=24
+ Planning Time: 0.192 ms
+ Execution Time: 25.308 ms
+(31 rows)
+
+(first version of the median query omitted: it filtered after aggregating and scanned every request; superseded below)
+
+##### After migration 0002 (index on requests.created_at) the median query was rewritten; re-measured on a 2-hour submission window (5,000 requests in table):
+=== (b) request fulfilment + median (as run by the API, after migration 0002) ===
+                                                                                          QUERY PLAN                                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate (actual time=1.213..1.255 rows=3 loops=1)
+   Group Key: timings.status
+   Group Key: ()
+   Buffers: shared hit=80
+   ->  Sort (actual time=1.062..1.071 rows=119 loops=1)
+         Sort Key: timings.status
+         Sort Method: quicksort  Memory: 31kB
+         Buffers: shared hit=72
+         ->  Subquery Scan on timings (actual time=0.993..1.024 rows=119 loops=1)
+               Buffers: shared hit=69
+               ->  HashAggregate (actual time=0.992..1.010 rows=119 loops=1)
+                     Group Key: requests.id
+                     Batches: 1  Memory Usage: 48kB
+                     Buffers: shared hit=69
+                     ->  Hash Right Join (actual time=0.393..0.961 rows=119 loops=1)
+                           Hash Cond: (e.request_id = requests.id)
+                           Buffers: shared hit=69
+                           ->  Seq Scan on request_status_events e (actual time=0.305..0.658 rows=3000 loops=1)
+                                 Filter: ((to_status)::text = 'delivered'::text)
+                                 Rows Removed by Filter: 5000
+                                 Buffers: shared hit=65
+                           ->  Hash (actual time=0.080..0.080 rows=119 loops=1)
+                                 Buckets: 1024  Batches: 1  Memory Usage: 15kB
+                                 Buffers: shared hit=4
+                                 ->  Index Scan using ix_requests_created_at on requests (actual time=0.011..0.046 rows=119 loops=1)
+                                       Index Cond: ((created_at >= '2026-03-01 00:00:00+00'::timestamp with time zone) AND (created_at < '2026-03-01 02:00:00+00'::timestamp with time zone))
+                                       Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=235
+ Planning Time: 1.096 ms
+ Execution Time: 1.350 ms
+(31 rows)
+

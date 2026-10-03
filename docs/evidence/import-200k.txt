@@ -1,0 +1,13 @@
+# 200k-row import (seed/generate_episodes.py 200000), local Docker Postgres 16, Apple laptop
+## first run
+  "total_rows": 200000,
+  "imported": 200000,
+  "unchanged": 0,
+  "skipped_count": 0,
+real 17.14
+## second run (same file; idempotency)
+  "total_rows": 200000,
+  "imported": 0,
+  "unchanged": 200000,
+  "skipped_count": 0,
+real 15.23

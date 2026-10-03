@@ -134,13 +134,14 @@ def import_episodes(
     unchanged = 0
     for start in range(0, len(pending), CHUNK):
         chunk = pending[start : start + CHUNK]
+        # One cached statement executed with a list of parameter sets (batched by SQLAlchemy),
+        # rather than a giant per-chunk VALUES clause that would be recompiled every time.
         stmt = (
-            insert(Episode)
-            .values([_as_values(row, run.id) for _, row in chunk])
-            .on_conflict_do_nothing(index_elements=[Episode.episode_id])
+            insert(Episode.__table__)
+            .on_conflict_do_nothing(index_elements=["episode_id"])
             .returning(Episode.episode_id)
         )
-        new_ids = set(db.scalars(stmt))
+        new_ids = set(db.scalars(stmt, [_as_values(row, run.id) for _, row in chunk]))
         inserted += len(new_ids)
         existing = [(line, row) for line, row in chunk if row.episode_id not in new_ids]
         if not existing:

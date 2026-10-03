@@ -1,0 +1,139 @@
+{
+  "import_run_id": 4,
+  "filename": "episodes.csv",
+  "sha256": "0ec9ff13ebd6d40181bb557b409183f4d07392b4b98abaf72cba6949168fc4ae",
+  "total_rows": 189,
+  "blank_lines": 2,
+  "imported": 0,
+  "unchanged": 172,
+  "skipped_count": 17,
+  "skipped_by_reason": {
+    "duplicate_in_file": 2,
+    "missing_episode_id": 1,
+    "invalid_duration": 4,
+    "missing_quality": 1,
+    "invalid_quality": 1,
+    "missing_duration": 1,
+    "recorded_at_in_future": 1,
+    "invalid_recorded_at": 1,
+    "unknown_robot": 1,
+    "conflicting_duplicate_in_file": 2,
+    "missing_robot_id": 1,
+    "malformed_row": 1
+  },
+  "warnings_by_code": {
+    "missing_operator_name": 1
+  },
+  "skipped": [
+    {
+      "line": 50,
+      "episode_id": "EP-00074",
+      "reason": "duplicate_in_file",
+      "detail": "identical to line 38"
+    },
+    {
+      "line": 59,
+      "episode_id": null,
+      "reason": "missing_episode_id",
+      "detail": "episode_id is blank"
+    },
+    {
+      "line": 66,
+      "episode_id": "EP-00018",
+      "reason": "invalid_duration",
+      "detail": "'45.5' is not a whole number of seconds between 1 and 3600"
+    },
+    {
+      "line": 69,
+      "episode_id": "EP-00019",
+      "reason": "missing_quality",
+      "detail": "quality is blank"
+    },
+    {
+      "line": 79,
+      "episode_id": "EP-00020",
+      "reason": "invalid_quality",
+      "detail": "'excellent' is not one of ('good', 'usable', 'bad')"
+    },
+    {
+      "line": 91,
+      "episode_id": "EP-00030",
+      "reason": "duplicate_in_file",
+      "detail": "identical to line 37"
+    },
+    {
+      "line": 95,
+      "episode_id": "EP-00016",
+      "reason": "missing_duration",
+      "detail": "duration_seconds is blank"
+    },
+    {
+      "line": 100,
+      "episode_id": "EP-00017",
+      "reason": "invalid_duration",
+      "detail": "'-5' is not a whole number of seconds between 1 and 3600"
+    },
+    {
+      "line": 113,
+      "episode_id": "EP-00025",
+      "reason": "recorded_at_in_future",
+      "detail": "2031-01-01T00:00:00+00:00 is in the future"
+    },
+    {
+      "line": 131,
+      "episode_id": "EP-00023",
+      "reason": "invalid_recorded_at",
+      "detail": "cannot parse 'not a date'"
+    },
+    {
+      "line": 162,
+      "episode_id": "EP-00024",
+      "reason": "unknown_robot",
+      "detail": "robot 'arm-99' is not a known robot"
+    },
+    {
+      "line": 168,
+      "episode_id": "EP-00011",
+      "reason": "conflicting_duplicate_in_file",
+      "detail": "same id as line 3 but different values; first kept"
+    },
+    {
+      "line": 170,
+      "episode_id": "EP-00021",
+      "reason": "missing_robot_id",
+      "detail": "robot_id is blank"
+    },
+    {
+      "line": 185,
+      "episode_id": "EP-90001",
+      "reason": "malformed_row",
+      "detail": "expected 7 fields, found 5"
+    },
+    {
+      "line": 187,
+      "episode_id": "EP-90003",
+      "reason": "invalid_duration",
+      "detail": "'N/A' is not a whole number of seconds between 1 and 3600"
+    },
+    {
+      "line": 188,
+      "episode_id": "EP-90004",
+      "reason": "invalid_duration",
+      "detail": "'999999' is not a whole number of seconds between 1 and 3600"
+    },
+    {
+      "line": 189,
+      "episode_id": "EP-00003",
+      "reason": "conflicting_duplicate_in_file",
+      "detail": "same id as line 9 but different values; first kept"
+    }
+  ],
+  "warnings": [
+    {
+      "line": 190,
+      "episode_id": "EP-90005",
+      "code": "missing_operator_name"
+    }
+  ],
+  "details_truncated": false
+}

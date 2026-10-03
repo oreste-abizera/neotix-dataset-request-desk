@@ -96,6 +96,7 @@ class Episode(Base):
 class Request(Base):
     __tablename__ = "requests"
     __table_args__ = (
+        Index("ix_requests_created_at", "created_at"),
         CheckConstraint(_in("status", STATUSES), name="ck_requests_status"),
         CheckConstraint("episodes_requested > 0", name="ck_requests_count"),
     )

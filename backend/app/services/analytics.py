@@ -9,17 +9,21 @@ from sqlalchemy.orm import Session as DbSession
 from app.domain import GOOD, STATUSES
 from app.models import Episode
 
-# Per request: first time it was submitted / delivered (a reworked request may be delivered twice;
-# the brief's "submitted -> delivered" is measured to the first delivery).
+# A request's submission time is requests.created_at: the 'submitted' status event is written in the
+# same transaction, so the two are identical, and filtering on the indexed column lets Postgres
+# touch only requests in range. Time to delivery is measured to the *first* 'delivered' event
+# (a reworked request is delivered more than once).
 _REQUEST_TIMINGS = text(
     """
-    WITH timings AS (
-        SELECT r.id, r.status,
-               MIN(e.created_at) FILTER (WHERE e.to_status = 'submitted') AS submitted_at,
-               MIN(e.created_at) FILTER (WHERE e.to_status = 'delivered') AS delivered_at
-        FROM requests r
-        JOIN request_status_events e ON e.request_id = r.id
-        GROUP BY r.id, r.status
+    WITH in_range AS (
+        SELECT id, status, created_at AS submitted_at
+        FROM requests
+        WHERE created_at >= :start AND created_at < :end
+    ), timings AS (
+        SELECT r.status, r.submitted_at, MIN(e.created_at) AS delivered_at
+        FROM in_range r
+        LEFT JOIN request_status_events e ON e.request_id = r.id AND e.to_status = 'delivered'
+        GROUP BY r.id, r.status, r.submitted_at
     )
     SELECT status,
            COUNT(*) AS n,
@@ -28,7 +32,6 @@ _REQUEST_TIMINGS = text(
                ORDER BY EXTRACT(EPOCH FROM (delivered_at - submitted_at))
            ) AS median_seconds
     FROM timings
-    WHERE submitted_at >= :start AND submitted_at < :end
     GROUP BY ROLLUP (status)
     """
 )
