@@ -1,0 +1,15 @@
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM"]
+ignore = ["B008"]  # FastAPI Depends() in argument defaults is idiomatic
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106"]
+"app/cli.py" = ["S105"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
