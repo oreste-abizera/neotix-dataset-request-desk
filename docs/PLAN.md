@@ -138,5 +138,7 @@ Chosen for what the brief names, written as behaviours not coverage:
 ## 9. Commit plan (conventional commits, incremental)
 `chore: scaffold` → `feat(db): schema and initial migration` → `feat(auth): …` → `feat(requests): state machine and history` → `feat(assignments): …` → `feat(import): …` → `feat(analytics): …` → `feat(ops): logging, health` → `feat(web): …` → `ci: …` → `docs: notes and readme`. Tests land in the same commit as the feature.
 
-## 10. Open items I will not block on
-A1-A4 assumptions stay as documented. Repo will be initialised at `Neotix/` (A22); the `.zip` and `.DS_Store` are git-ignored. I need your go-ahead to start Phase 4.
+## 10. Plan vs. what happened
+- Postgres **16** (not 17): the 17 image pull stalled on the network; 16 has every feature used.
+- Median query rewritten after `EXPLAIN ANALYZE` (migration `0002`); import insert path changed after profiling. See `docs/devlog.md`.
+- Stretch item delivered: SSE. Total effort tracked close to the plan (about 7.5 h including the stretch).

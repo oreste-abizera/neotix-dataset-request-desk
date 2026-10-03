@@ -3,72 +3,72 @@
 Sources: `WORK_TASK.md` (the brief, "B§n"), `seed/README.md` ("S-README"), `seed/users.json`, `seed/episodes.csv`, `seed/generate_episodes.py`.
 Deadline: Sun 04 Oct 2026 23:59 Kigali (UTC+2). Budget 6-8h, hard cap ~10h. Submission: Git repo link, emailed in reply to the brief.
 
-Status legend: `[ ]` todo. Tick as implemented; Phase 5 adds evidence next to each.
+Status legend: `[x]` done and verified (evidence in the table at the end), `[~]` done with a caveat, `[ ]` is the candidate's own action.
 
 ---
 
 ## 1. Explicit requirements
 
 ### Roles, auth (B§2)
-- [ ] R1. Three roles: `client`, `operator`, `admin`. (B§2)
-- [ ] R2. **client**: create requests; view *only own* requests; accept/reject a delivered request. (B§2)
-- [ ] R3. **operator**: view all requests; move a request through its workflow; assign episodes; import episode metadata. (B§2)
-- [ ] R4. **admin**: everything an operator can do, plus create/deactivate users and change roles. (B§2)
-- [ ] R5. Authentication required for every action except login. (B§2)
-- [ ] R6. Authorization enforced **server-side**; hiding UI buttons is insufficient. (B§2)
-- [ ] R7. Seed step creates the 5 users from `seed/users.json` (admin, 2 operators, 2 clients with organisation); passwords **not stored in plain text**. (S-README, B§4.3)
+- [x] R1. Three roles: `client`, `operator`, `admin`. (B§2)
+- [x] R2. **client**: create requests; view *only own* requests; accept/reject a delivered request. (B§2)
+- [x] R3. **operator**: view all requests; move a request through its workflow; assign episodes; import episode metadata. (B§2)
+- [x] R4. **admin**: everything an operator can do, plus create/deactivate users and change roles. (B§2)
+- [x] R5. Authentication required for every action except login. (B§2)
+- [x] R6. Authorization enforced **server-side**; hiding UI buttons is insufficient. (B§2)
+- [x] R7. Seed step creates the 5 users from `seed/users.json` (admin, 2 operators, 2 clients with organisation); passwords **not stored in plain text**. (S-README, B§4.3)
 
 ### Domain (B§3)
-- [ ] R8. **Episode**: `episode_id`, `robot_id`, `task_name`, `recorded_at`, `duration_seconds`, `operator_name`, `quality` (`good`/`usable`/`bad`), plus extras as needed. (B§3)
-- [ ] R9. Episodes imported from a messy CSV (`seed/episodes.csv`). Import must be **idempotent** (safe to re-run on the same file, no duplicate records). (B§3)
-- [ ] R10. Import must **report clearly**: imported, skipped, and *why*. (B§3)
-- [ ] R11. Decide how each messy case is handled, handle it, report it, and document in NOTES.md. (S-README)
-- [ ] R12. **Request**: belongs to a client; `task_name`, `episodes_requested` (count), `deadline`, `notes`, `status`. (B§3)
-- [ ] R13. Status flow: `submitted -> in_progress -> delivered -> accepted`; `delivered -> rejected -> in_progress` (rework). Only valid transitions. (B§3)
-- [ ] R14. Transitions only by owning roles: clients accept/reject; operators do the rest. (B§3)
-- [ ] R15. Every status change recorded with **who** and **when**. (B§3)
-- [ ] R16. **Assignment**: episode assigned to a request. An episode is in **at most one** request at a time. (B§3)
-- [ ] R17. Only `good` or `usable` episodes are assignable. (B§3)
-- [ ] R18. A request cannot move to `delivered` until it has >= `episodes_requested` episodes assigned. (B§3)
+- [x] R8. **Episode**: `episode_id`, `robot_id`, `task_name`, `recorded_at`, `duration_seconds`, `operator_name`, `quality` (`good`/`usable`/`bad`), plus extras as needed. (B§3)
+- [x] R9. Episodes imported from a messy CSV (`seed/episodes.csv`). Import must be **idempotent** (safe to re-run on the same file, no duplicate records). (B§3)
+- [x] R10. Import must **report clearly**: imported, skipped, and *why*. (B§3)
+- [x] R11. Decide how each messy case is handled, handle it, report it, and document in NOTES.md. (S-README)
+- [x] R12. **Request**: belongs to a client; `task_name`, `episodes_requested` (count), `deadline`, `notes`, `status`. (B§3)
+- [x] R13. Status flow: `submitted -> in_progress -> delivered -> accepted`; `delivered -> rejected -> in_progress` (rework). Only valid transitions. (B§3)
+- [x] R14. Transitions only by owning roles: clients accept/reject; operators do the rest. (B§3)
+- [x] R15. Every status change recorded with **who** and **when**. (B§3)
+- [x] R16. **Assignment**: episode assigned to a request. An episode is in **at most one** request at a time. (B§3)
+- [x] R17. Only `good` or `usable` episodes are assignable. (B§3)
+- [x] R18. A request cannot move to `delivered` until it has >= `episodes_requested` episodes assigned. (B§3)
 
 ### Backend (B§4.1)
-- [ ] R19. Python backend; REST or GraphQL. (B§4.1, B§6)
-- [ ] R20. Relational DB (Postgres preferred; SQLite acceptable if prod differences are explained). (B§4.1)
-- [ ] R21. Schema managed by **migrations**. (B§4.1)
-- [ ] R22. CSV import as endpoint or CLI command. (B§4.1)
-- [ ] R23. **Analytics endpoint** for a date range: (a) episodes recorded per day per robot; (b) request counts by status + **median** time `submitted -> delivered`; (c) top 5 task names by count of *good* episodes. (B§4.1)
-- [ ] R24. Analytics computed **in the database**, not by loading rows into Python. (B§4.1)
-- [ ] R25. README says how analytics behave with **5 million episodes**. (B§4.1)
-- [ ] R26. `/health` endpoint. (B§4.1)
-- [ ] R27. Structured logging: one line per request with method, path, status, duration, user id if authenticated. (B§4.1)
+- [x] R19. Python backend; REST or GraphQL. (B§4.1, B§6)
+- [x] R20. Relational DB (Postgres preferred; SQLite acceptable if prod differences are explained). (B§4.1)
+- [x] R21. Schema managed by **migrations**. (B§4.1)
+- [x] R22. CSV import as endpoint or CLI command. (B§4.1)
+- [x] R23. **Analytics endpoint** for a date range: (a) episodes recorded per day per robot; (b) request counts by status + **median** time `submitted -> delivered`; (c) top 5 task names by count of *good* episodes. (B§4.1)
+- [x] R24. Analytics computed **in the database**, not by loading rows into Python. (B§4.1)
+- [x] R25. README says how analytics behave with **5 million episodes**. (B§4.1)
+- [x] R26. `/health` endpoint. (B§4.1)
+- [x] R27. Structured logging: one line per request with method, path, status, duration, user id if authenticated. (B§4.1)
 
 ### Frontend (B§4.2)
-- [ ] R28. Working UI, any modern framework, small but correct. (B§4.2)
-- [ ] R29. Client: log in, create request, see own requests + status, accept/reject a delivered one. (B§4.2)
-- [ ] R30. Operator: see all requests, change status, assign episodes via a simple list with filters by `task_name` and `quality`. (B§4.2)
+- [x] R28. Working UI, any modern framework, small but correct. (B§4.2)
+- [x] R29. Client: log in, create request, see own requests + status, accept/reject a delivered one. (B§4.2)
+- [x] R30. Operator: see all requests, change status, assign episodes via a simple list with filters by `task_name` and `quality`. (B§4.2)
 
 ### Operations (B§4.3)
-- [ ] R31. `docker compose up` (or one documented command) brings up DB, migrations, seed users, API, frontend from a clean clone. (B§4.3)
-- [ ] R32. Automated tests runnable with one command. Priority areas: **authorization rules, status transitions, assignment rules, import idempotency**. Coverage % irrelevant; *choice* of tests matters. (B§4.3)
-- [ ] R33. *(Nice to have)* CI (GitHub Actions) running tests. (B§4.3)
+- [x] R31. `docker compose up` (or one documented command) brings up DB, migrations, seed users, API, frontend from a clean clone. (B§4.3)
+- [x] R32. Automated tests runnable with one command. Priority areas: **authorization rules, status transitions, assignment rules, import idempotency**. Coverage % irrelevant; *choice* of tests matters. (B§4.3)
+- [~] R33. *(Nice to have)* CI (GitHub Actions) running tests. (B§4.3) Written; not yet executed on GitHub.
 
 ### Stretch, pick ONE, say which (B§4.4)
-- [ ] R34. Real-time (WS/SSE) | Background export job (2-5s sleep, 20% random failure, safe retry, idempotent, per-episode status in UI) | Public deployment w/ HTTPS. Bonus only, never a penalty.
+- [x] R34. Real-time (WS/SSE) | Background export job (2-5s sleep, 20% random failure, safe retry, idempotent, per-episode status in UI) | Public deployment w/ HTTPS. Bonus only, never a penalty.
 
 ### Written notes: `NOTES.md`, 1-2 pages, "a big part of the evaluation" (B§5)
-- [ ] R35. Design: data model (diagram or paragraph), where state lives, 2-3 hardest decisions and why.
-- [ ] R36. Deliberately omitted/simplified; what to do next with two more days.
-- [ ] R37. Something that went wrong while building and how it was diagnosed. (Must be real; log genuine incidents as they happen.)
-- [ ] R38. Security: passwords/tokens, input validation, the 2 vulnerabilities I'd worry about most.
-- [ ] R39. Scale: what breaks first at 10x users and 100x episodes; what to change.
-- [ ] R40. AI tooling: which tools, used for what.
+- [x] R35. Design: data model (diagram or paragraph), where state lives, 2-3 hardest decisions and why.
+- [x] R36. Deliberately omitted/simplified; what to do next with two more days.
+- [x] R37. Something that went wrong while building and how it was diagnosed. (Must be real; log genuine incidents as they happen.)
+- [x] R38. Security: passwords/tokens, input validation, the 2 vulnerabilities I'd worry about most.
+- [x] R39. Scale: what breaks first at 10x users and 100x episodes; what to change.
+- [x] R40. AI tooling: which tools, used for what.
 
 ### Ground rules and submission (B§6, B§7)
 - [ ] R41. I must understand and defend every line; live interview will modify/extend my code. (B§6)
-- [ ] R42. Don't over-build; clean, tested, honest 70% beats sprawling 100%. (B§6)
-- [ ] R43. Commit as you go; Git history is read. (B§6)
-- [ ] R44. Ambiguities: decide, and write the decision in NOTES.md. (B§6)
-- [ ] R45. Repo contains: code; `README.md` (how to run, how to test, **seed credentials**); `NOTES.md`; CI config if any; deployment URL if stretch = deployment. (B§7)
+- [x] R42. Don't over-build; clean, tested, honest 70% beats sprawling 100%. (B§6)
+- [x] R43. Commit as you go; Git history is read. (B§6)
+- [x] R44. Ambiguities: decide, and write the decision in NOTES.md. (B§6)
+- [x] R45. Repo contains: code; `README.md` (how to run, how to test, **seed credentials**); `NOTES.md`; CI config if any; deployment URL if stretch = deployment. (B§7)
 - [ ] R46. Reply to the original email with the link. Questions may be emailed. (B§7)
 
 ---
@@ -163,7 +163,7 @@ Derived from B§8 (five roughly equal weights: domain-rule correctness, data mod
 
 ## 5. Ambiguities, contradictions, missing details (with proposed assumptions)
 
-Items marked **[ASK]** could materially change the design; a draft email is in section 6.
+Items marked **[ASK]** could materially change the design. They were not sent as questions; the proposed assumption was used.
 
 | ID | Ambiguity | Proposed assumption |
 |---|---|---|
@@ -196,22 +196,37 @@ Items marked **[ASK]** could materially change the design; a draft email is in s
 - B§0 says "brief is explicit about what matters most (section 8)": section 8 is the evaluation weights, so I'm treating the five buckets as the prioritisation.
 - S-README says "an unknown robot" (singular), but data has one unknown (`arm-99`) and one blank robot; handled as two distinct reject reasons.
 - Seed passwords are weak (`admin123`): required by the brief; documented as dev-only, and the seed step is gated so it cannot silently run in a production-like env.
-- Tooling note: TaskCreate/TaskUpdate are not available in this session, so progress is tracked by the phase checklists and this file's tick boxes.
 
 ---
 
-## 6. Draft clarification email (optional; I proceed on the assumptions above meanwhile)
+> The four design-relevant questions (A1-A4) were not sent to the hiring team; the stated assumptions were used and are documented in NOTES.md.
 
-> **Subject:** Clarifying questions: Dataset Request Desk technical test
->
-> Hello,
->
-> Thank you for the opportunity. I'm making good progress and have a few short questions. I have written down a default assumption for each so I am not blocked, and I'll adjust if you prefer otherwise:
->
-> 1. **Task matching on assignment:** should an episode's `task_name` have to match the request's `task_name` to be assigned? I am assuming it does not (the brief states only the quality and one-request rules), but the UI will pre-filter by the request's task.
-> 2. **Re-importing existing IDs with different values:** if an `episode_id` already exists but a later CSV carries different values (e.g. a different `quality`), I plan to skip it and report it as a conflict rather than overwrite, so that quality cannot change under an existing assignment. Is that the behaviour you would want?
-> 3. **Dates:** I read `14/08/2026 09:15` as day-first, and treat timestamps without a timezone as UTC. Is that right?
-> 4. **Assignment window:** I plan to allow assigning/unassigning episodes only while a request is `submitted` or `in_progress` (locked once `delivered`). Is that acceptable?
->
-> Thanks, and kind regards,
-> [Your name]
+## 7. Verification (Phase 5)
+
+Run from a fresh `git clone` using only the README: `make up` -> stack healthy; all five documented logins return 200; 172 sample episodes seeded; `make venv && make test` -> **196 passed**; `make lint` -> ruff clean, frontend type-check clean. UI exercised by hand in a browser as operator and client (create, assign, blocked delivery, deliver, accept, audit history, live updates).
+
+| Req | Evidence |
+|---|---|
+| R1-R4, R6 | `tests/test_authz.py` (role x endpoint matrix, only-admin user management, only-client creates requests, client isolation) |
+| R5 | `test_every_api_route_requires_authentication`, parametrised over the OpenAPI route list (found the unauthenticated `logout`) |
+| R7 | `tests/test_seed.py`: documented credentials all log in, hashes are `$argon2`, seed idempotent, refuses in production |
+| R8 | `app/models.py` `Episode`; migration `0001` |
+| R9, R10, R11 | `tests/test_import.py` (exact counts on the real file, 3x idempotent re-import), `tests/test_csv_rules.py` (one case per messy row); `docs/evidence/import-real-export-report*.json` |
+| R12-R15 | `tests/test_transitions.py`: 75-case matrix, full rework path, event list with actors and timestamps |
+| R16, R17 | `tests/test_assignments.py`: quality rule, batch atomicity, two-thread race, `assignments.episode_id` is the primary key |
+| R18 | `test_cannot_deliver_without_enough_episodes`, `test_can_deliver_with_exactly_or_more_than_requested`, deliver-vs-unassign race |
+| R19-R21 | FastAPI REST; Postgres 16; Alembic `0001`, `0002` (upgrade/downgrade/upgrade exercised) |
+| R22 | `POST /imports` and `python -m app.cli import-episodes` |
+| R23, R24 | `tests/test_analytics.py` (hand-computed fixture); all aggregation in SQL (`services/analytics.py`) |
+| R25 | README "Analytics with 5 million episodes" + `docs/evidence/analytics-explain-200k.txt` |
+| R26, R27 | `tests/test_operability.py`; JSON log lines visible in `docker compose logs api` |
+| R28-R30 | Manual browser run-through; frontend type-checks and builds in CI and `make lint` |
+| R31 | Fresh-clone `make up` (and `docker compose up --build -d --wait`) |
+| R32 | `make test`, 196 tests |
+| R33 | `.github/workflows/ci.yml` written; **not executed on GitHub from here** |
+| R34 | SSE: `tests/test_events.py` + curl through nginx showing an operator receiving `request.created` while a client gets 403 |
+| R35-R40 | NOTES.md sections 1-6 |
+| R42-R44 | 9 incremental commits; scope kept to the brief; assumptions recorded |
+| R45 | README (run, test, credentials), NOTES, CI file |
+
+Gaps: R41 and R46 are the candidate's to do; no frontend automated tests; no screenshots in the README; CI unexecuted.
