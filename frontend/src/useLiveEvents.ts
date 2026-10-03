@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const EVENTS = ["request.created", "request.status_changed", "request.assignments_changed", "resync"];
+const EVENTS = ["request.created", "request.status_changed", "request.assignments_changed", "request.exports_changed", "resync"];
 
 /**
  * Subscribes to the server's event stream (staff only). Calls `onChange` whenever something

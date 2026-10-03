@@ -25,6 +25,15 @@ export interface RequestRow {
   updated_at: string;
 }
 
+export interface ExportInfo {
+  status: "pending" | "running" | "succeeded" | "failed";
+  attempts: number;
+  max_attempts: number;
+  last_error: string | null;
+  next_attempt_at: string | null;
+  finished_at: string | null;
+}
+
 export interface Episode {
   episode_id: string;
   robot_id: string;
@@ -34,6 +43,7 @@ export interface Episode {
   operator_name: string | null;
   quality: "good" | "usable" | "bad";
   assigned_request_id: number | null;
+  export?: ExportInfo | null; // staff only
 }
 
 export interface StatusEvent {

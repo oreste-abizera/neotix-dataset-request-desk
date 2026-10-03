@@ -24,6 +24,7 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-neotix}:${POSTGRES_PASSWORD:-neotix_dev_password}@db:5432/${POSTGRES_DB:-neotix}
       APP_ENV: ${APP_ENV:-development}
       SEED_SAMPLE_EPISODES: "true"
+      RUN_WORKER: "true"   # background export jobs run as threads inside the API process
     depends_on:
       db:
         condition: service_healthy

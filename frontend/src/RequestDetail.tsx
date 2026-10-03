@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, describeError } from "./api";
 import AssignPanel from "./AssignPanel";
-import { Card, ErrorText, StatusBadge } from "./components";
+import { Card, ErrorText, ExportBadge, StatusBadge } from "./components";
 import { ACTION_LABEL, fmtDate } from "./format";
 import type { RequestDetail as Detail, Status, User } from "./types";
 
@@ -99,10 +99,28 @@ export default function RequestDetail({ id, user, refreshKey }: { id: number; us
       {staff && editable && <AssignPanel detail={detail} onChange={setDetail} />}
 
       <Card title={`Assigned episodes (${detail.episodes.length})`}>
+        {staff && detail.episodes.some((e) => e.export?.status === "failed") && (
+          <div className="row">
+            <span className="error">Some exports failed after all attempts.</span>
+            <button
+              onClick={async () => {
+                try {
+                  setDetail(await api.post<Detail>(`/requests/${id}/exports/retry`));
+                  setError(null);
+                } catch (e) {
+                  setError(describeError(e));
+                }
+              }}
+            >
+              Retry failed exports
+            </button>
+          </div>
+        )}
         {detail.episodes.length === 0 ? (
           <p className="muted">No episodes assigned yet.</p>
         ) : (
           <EpisodeTable
+            showExport={staff}
             episodes={detail.episodes}
             onRemove={
               staff && editable
@@ -137,7 +155,9 @@ export default function RequestDetail({ id, user, refreshKey }: { id: number; us
 function EpisodeTable({
   episodes,
   onRemove,
+  showExport,
 }: {
+  showExport: boolean;
   episodes: Detail["episodes"];
   onRemove?: (episodeId: string) => void;
 }) {
@@ -151,6 +171,7 @@ function EpisodeTable({
           <th>Recorded</th>
           <th>Seconds</th>
           <th>Quality</th>
+          {showExport && <th>Export</th>}
           {onRemove && <th />}
         </tr>
       </thead>
@@ -163,6 +184,11 @@ function EpisodeTable({
             <td>{fmtDate(e.recorded_at)}</td>
             <td>{e.duration_seconds}</td>
             <td>{e.quality}</td>
+            {showExport && (
+              <td>
+                <ExportBadge info={e.export} />
+              </td>
+            )}
             {onRemove && (
               <td>
                 <button className="link" onClick={() => onRemove(e.episode_id)}>
